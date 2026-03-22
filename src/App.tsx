@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
@@ -545,7 +545,18 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 pb-20 relative">
+      {/* Refresh Button */}
+      {!isExportingMode && (
+        <button 
+          onClick={() => window.location.reload()}
+          className="fixed top-4 right-4 z-[10000] p-2.5 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-xl shadow-sm transition-all group no-print"
+          title="Muat Ulang Halaman"
+        >
+          <RotateCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+        </button>
+      )}
+
       <div className="max-w-4xl mx-auto space-y-6">
         
         {!isExportingMode && (
