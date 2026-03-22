@@ -143,7 +143,7 @@ export default function App() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: `Buatkan Modul Ajar/RPP ${subject} SANGAT LENGKAP untuk materi: "${topic}" bagi peserta didik tingkat ${kelas}. Total Alokasi Waktu adalah: ${alokasiWaktu}. Bagi alokasi waktu tersebut secara logis pada bagian atpTabel.`,
         config: {
           systemInstruction: `Kamu adalah Guru Ahli pembuat Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${subject}. 
@@ -238,7 +238,15 @@ export default function App() {
         throw new Error('Respons tidak valid dari AI.');
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan saat menyusun materi.');
+      console.error("Generate Error:", err);
+      let errorMessage = err.message || 'Terjadi kesalahan saat menyusun materi.';
+      
+      // Handle Quota Exceeded (429)
+      if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('quota')) {
+        errorMessage = "Kuota API Gemini Anda telah habis atau terlalu banyak permintaan dalam waktu singkat. Silakan tunggu beberapa saat (1-2 menit) atau gunakan API Key lain di menu Pengaturan.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
