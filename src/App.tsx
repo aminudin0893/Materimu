@@ -143,12 +143,28 @@ export default function App() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         contents: `Buatkan Modul Ajar/RPP ${subject} SANGAT LENGKAP untuk materi: "${topic}" bagi peserta didik tingkat ${kelas}. Total Alokasi Waktu adalah: ${alokasiWaktu}. Bagi alokasi waktu tersebut secara logis pada bagian atpTabel.`,
         config: {
-          systemInstruction: `Kamu adalah Guru Ahli pembuat Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${subject}. ATURAN WAJIB: 1. Gunakan bahasa Indonesia baku (EYD/PUEBI). 2. Jika penjelasan panjang, WAJIB pecah jadi beberapa paragraf (\\n\\n). ${instruksiPendekatan} 4. 3-4 TP. 5. Buat atpTabel yang memuat (tahap, kegiatan, durasi) dan pastikan durasi total sesuai. 6. Buat 2 Pertanyaan Pemantik, masing-masing lengkapi dengan 2 contoh jawaban alternatif dari siswa dan penjelasan/penguatan dari guru. 7. Pengertian min 2 paragraf. 8. Minimal 1 Dalil. 9. Sub-topik min 3. 10. LKPD. 11. Tugas Individu & Kelompok. 12. 5 Soal PG + Kunci. 13. Instrumen Penilaian rinci.`,
+          systemInstruction: `Kamu adalah Guru Ahli pembuat Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${subject}. 
+          ATURAN WAJIB: 
+          1. Gunakan bahasa Indonesia baku (EYD/PUEBI). 
+          2. Jika penjelasan panjang, WAJIB pecah jadi beberapa paragraf (\\n\\n). 
+          ${instruksiPendekatan} 
+          4. 3-4 TP. 
+          5. Buat atpTabel yang memuat (tahap, kegiatan, durasi) dan pastikan durasi total sesuai. 
+          6. Buat 2 Pertanyaan Pemantik, masing-masing lengkapi dengan 2 contoh jawaban alternatif dari siswa dan penjelasan/penguatan dari guru. 
+          7. Pengertian min 2 paragraf. 
+          8. Minimal 1 Dalil. 
+          9. Sub-topik min 3. 
+          10. LKPD. 
+          11. Tugas Individu & Kelompok. 
+          12. 5 Soal PG + Kunci. 
+          13. Instrumen Penilaian rinci.
+          14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
+          temperature: 0.7,
           responseSchema: {
             type: "object",
             properties: {
@@ -194,6 +210,8 @@ export default function App() {
       });
 
       const responseText = response.text;
+      console.log("AI Response Raw:", responseText);
+      
       if (responseText) {
         let cleanJson = responseText.trim();
         // Bersihkan jika ada pembungkus markdown ```json ... ```
@@ -203,11 +221,18 @@ export default function App() {
         
         try {
           const parsedResult = JSON.parse(cleanJson);
+          
+          // Validasi minimal field
+          if (!parsedResult.judulMateri || !parsedResult.tp) {
+            throw new Error('Data yang dihasilkan tidak lengkap.');
+          }
+
           parsedResult.generatedSubject = subject; 
           setResult(parsedResult);
         } catch (parseError) {
           console.error('JSON Parse Error:', parseError);
-          throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap. Silakan coba lagi dengan topik yang lebih spesifik.');
+          console.error('Cleaned JSON that failed:', cleanJson);
+          throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap atau terputus. Silakan coba lagi dengan topik yang lebih spesifik.');
         }
       } else {
         throw new Error('Respons tidak valid dari AI.');
