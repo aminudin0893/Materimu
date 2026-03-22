@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, Image as ImageIcon
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
@@ -37,6 +37,7 @@ export default function App() {
   const [expandedSubtopics, setExpandedSubtopics] = useState<number[]>([]); 
   const [expandAll, setExpandAll] = useState(false);
   const [customApiKey, setCustomApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const jpgMenuRef = useRef<HTMLDivElement>(null);
@@ -382,14 +383,41 @@ export default function App() {
               <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <div className="flex-1">
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Custom Gemini API Key (Opsional)</label>
-                  <input
-                    type="password"
-                    value={customApiKey}
-                    onChange={(e) => setCustomApiKey(e.target.value)}
-                    placeholder="Masukkan API Key Anda jika ada..."
-                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs"
-                    disabled={isLoading || isPdfLoading || isJpgLoading}
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showApiKey ? "text" : "password"}
+                      value={customApiKey}
+                      onChange={(e) => setCustomApiKey(e.target.value)}
+                      placeholder="Masukkan API Key Anda..."
+                      className="w-full pl-3 pr-16 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs"
+                      disabled={isLoading || isPdfLoading || isJpgLoading}
+                    />
+                    <div className="absolute right-1.5 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const text = await navigator.clipboard.readText();
+                            setCustomApiKey(text);
+                          } catch (err) {
+                            console.error('Gagal menempel teks', err);
+                          }
+                        }}
+                        className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
+                        title="Tempel dari clipboard"
+                      >
+                        <Clipboard size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
+                        title={showApiKey ? "Sembunyikan" : "Tampilkan"}
+                      >
+                        {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-end pb-1">
                   <button
