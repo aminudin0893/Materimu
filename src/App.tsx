@@ -97,6 +97,7 @@ export default function App() {
         config: {
           systemInstruction: `Kamu adalah Guru Ahli pembuat Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${subject}. ATURAN WAJIB: 1. Gunakan bahasa Indonesia baku (EYD/PUEBI). 2. Jika penjelasan panjang, WAJIB pecah jadi beberapa paragraf (\\n\\n). ${instruksiPendekatan} 4. 3-4 TP. 5. Buat atpTabel yang memuat (tahap, kegiatan, durasi) dan pastikan durasi total sesuai. 6. Buat 2 Pertanyaan Pemantik, masing-masing lengkapi dengan 2 contoh jawaban alternatif dari siswa dan penjelasan/penguatan dari guru. 7. Pengertian min 2 paragraf. 8. Minimal 1 Dalil. 9. Sub-topik min 3. 10. LKPD. 11. Tugas Individu & Kelompok. 12. 5 Soal PG + Kunci. 13. Instrumen Penilaian rinci.`,
           responseMimeType: "application/json",
+          maxOutputTokens: 8192,
           responseSchema: {
             type: "object",
             properties: {
@@ -143,9 +144,20 @@ export default function App() {
 
       const responseText = response.text;
       if (responseText) {
-        const parsedResult = JSON.parse(responseText);
-        parsedResult.generatedSubject = subject; 
-        setResult(parsedResult);
+        let cleanJson = responseText.trim();
+        // Bersihkan jika ada pembungkus markdown ```json ... ```
+        if (cleanJson.startsWith('```')) {
+          cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        }
+        
+        try {
+          const parsedResult = JSON.parse(cleanJson);
+          parsedResult.generatedSubject = subject; 
+          setResult(parsedResult);
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError);
+          throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap. Silakan coba lagi dengan topik yang lebih spesifik.');
+        }
       } else {
         throw new Error('Respons tidak valid dari AI.');
       }
