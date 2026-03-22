@@ -152,7 +152,7 @@ export default function App() {
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Buatkan Modul Ajar/RPP ${subject} SANGAT LENGKAP untuk materi: "${topic}" bagi peserta didik tingkat ${kelas}. Total Alokasi Waktu adalah: ${alokasiWaktu}. Bagi alokasi waktu tersebut secara logis pada bagian atpTabel.`,
+        contents: `Buatkan Modul Ajar/RPP ${subject} yang LENGKAP DAN KOMPREHENSIF untuk materi: "${topic}" bagi peserta didik tingkat ${kelas}. Total Alokasi Waktu adalah: ${alokasiWaktu}. Bagi alokasi waktu tersebut secara logis pada bagian atpTabel.`,
         config: {
           systemInstruction: `Kamu adalah Guru Ahli pembuat Modul Ajar Kurikulum Merdeka untuk mata pelajaran ${subject}. 
           ATURAN WAJIB: 
@@ -169,7 +169,8 @@ export default function App() {
           11. Tugas Individu & Kelompok. 
           12. 5 Soal PG + Kunci. 
           13. Instrumen Penilaian rinci.
-          14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON.`,
+          14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
+          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.7,
@@ -221,8 +222,19 @@ export default function App() {
       console.log("AI Response Raw:", responseText);
       
       if (responseText) {
-        let cleanJson = responseText.trim();
-        // Bersihkan jika ada pembungkus markdown ```json ... ```
+        let cleanJson = "";
+        
+        // Robust JSON extraction: cari kurung kurawal pertama dan terakhir
+        const firstBrace = responseText.indexOf('{');
+        const lastBrace = responseText.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleanJson = responseText.substring(firstBrace, lastBrace + 1);
+        } else {
+          cleanJson = responseText.trim();
+        }
+        
+        // Bersihkan jika masih ada pembungkus markdown (fallback)
         if (cleanJson.startsWith('```')) {
           cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
         }
