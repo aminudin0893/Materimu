@@ -94,16 +94,6 @@ export default function App() {
   }, [result]);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    const scriptCanvas = document.createElement('script');
-    scriptCanvas.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    scriptCanvas.async = true;
-    document.body.appendChild(scriptCanvas);
-    
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowPdfMenu(false);
@@ -115,8 +105,6 @@ export default function App() {
     document.addEventListener("mousedown", handleClickOutside);
     
     return () => { 
-      if (document.body.contains(script)) document.body.removeChild(script); 
-      if (document.body.contains(scriptCanvas)) document.body.removeChild(scriptCanvas);
       document.removeEventListener("mousedown", handleClickOutside);
     }
   }, []);
@@ -274,9 +262,11 @@ export default function App() {
 
   const handleExportPDF = (target: string) => {
     if (!result) return;
+    
+    // Check if library is loaded
     const html2pdf = (window as any).html2pdf;
-    if (typeof html2pdf === 'undefined') {
-      setError("Library PDF sedang dimuat, mohon tunggu sebentar.");
+    if (!html2pdf) {
+      setError("Library PDF gagal dimuat. Silakan muat ulang halaman (Refresh).");
       return;
     }
 
@@ -286,14 +276,12 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
 
+    // Wait for DOM update
     setTimeout(() => {
       try {
         const element = document.getElementById('modul-ajar-content');
         if (!element) {
-          setError("Gagal menemukan konten untuk disimpan.");
-          setIsPdfLoading(false);
-          setIsExportingMode(false);
-          return;
+          throw new Error("Gagal menemukan konten untuk disimpan.");
         }
 
         let prefix = "Modul_Ajar";
@@ -303,12 +291,14 @@ export default function App() {
         if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
 
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
+        const fileName = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`;
+
         const opt = {
           margin: [10, 5, 10, 5], 
-          filename: `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`,
+          filename: fileName,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { 
-            scale: 1.5, // Reduced scale for better performance on large docs
+            scale: 1.5, 
             useCORS: true, 
             letterRendering: true, 
             scrollY: 0,
@@ -318,6 +308,7 @@ export default function App() {
           pagebreak: { mode: ['css', 'legacy'] } 
         };
 
+        // Execute html2pdf
         html2pdf().set(opt).from(element).save()
           .then(() => {
             setIsPdfLoading(false);
@@ -333,21 +324,24 @@ export default function App() {
             setIsExportingMode(false);
             setExportTarget('all');
           });
-      } catch (e) {
-        console.error("PDF Library Error", e);
-        setError("Terjadi kesalahan sistem saat memproses PDF.");
+      } catch (e: any) {
+        console.error("PDF Export Exception", e);
+        setError(e.message || "Terjadi kesalahan sistem saat memproses PDF.");
         setIsPdfLoading(false);
         setExpandAll(false);
         setIsExportingMode(false);
+        setExportTarget('all');
       }
     }, 1500); 
   };
 
   const handleExportJPG = (target: string) => {
     if (!result) return;
+    
+    // Check if library is loaded
     const html2canvas = (window as any).html2canvas;
-    if (typeof html2canvas === 'undefined') {
-      setError("Library Gambar sedang dimuat, mohon tunggu sebentar.");
+    if (!html2canvas) {
+      setError("Library Gambar gagal dimuat. Silakan muat ulang halaman (Refresh).");
       return;
     }
 
@@ -370,10 +364,12 @@ export default function App() {
         const originalWidth = element.style.width;
         const originalMaxWidth = element.style.maxWidth;
         const originalPadding = element.style.padding;
+        const originalBackground = element.style.background;
         
         element.style.width = '800px';
         element.style.maxWidth = '800px';
         element.style.padding = '30px 40px'; 
+        element.style.background = '#ffffff';
         
         let prefix = "Modul_Ajar";
         if (target === 'lkpd') prefix = "LKPD";
@@ -387,11 +383,13 @@ export default function App() {
           scale: 1.5,
           useCORS: true,
           windowWidth: 900,
-          logging: false
+          logging: false,
+          backgroundColor: '#ffffff'
         }).then((canvas: HTMLCanvasElement) => {
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
           element.style.padding = originalPadding;
+          element.style.background = originalBackground;
 
           const imgData = canvas.toDataURL('image/jpeg', 0.9);
           const link = document.createElement('a');
@@ -404,11 +402,12 @@ export default function App() {
           setIsExportingMode(false);
           setExportTarget('all');
         }).catch((err: any) => {
-          console.error("Error creating JPG", err);
-          setError("Gagal membuat gambar JPG. Dokumen mungkin terlalu besar.");
+          console.error("JPG Export Error:", err);
+          setError("Gagal menyimpan gambar. Dokumen mungkin terlalu besar.");
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
           element.style.padding = originalPadding;
+          element.style.background = originalBackground;
           setIsJpgLoading(false);
           setExpandAll(false);
           setIsExportingMode(false);
@@ -420,7 +419,7 @@ export default function App() {
         setIsJpgLoading(false);
         setIsExportingMode(false);
       }
-    }, 1000);
+    }, 1500);
   };
 
   const handleCopy = () => {
