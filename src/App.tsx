@@ -114,6 +114,7 @@ export default function App() {
     setIsPdfLoading(false);
     setIsJpgLoading(false);
     setIsExportingMode(false);
+    setExpandAll(false);
     setError('');
   };
 
@@ -276,6 +277,16 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
 
+    // Safety timeout to prevent hanging (45 seconds)
+    const safetyTimeout = setTimeout(() => {
+      if (setIsPdfLoading) {
+        setIsPdfLoading(false);
+        setIsExportingMode(false);
+        setExpandAll(false);
+        setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar atau browser kehabisan memori.");
+      }
+    }, 45000);
+
     // Wait for DOM update
     setTimeout(() => {
       try {
@@ -293,12 +304,17 @@ export default function App() {
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
         const fileName = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`;
 
+        const elementHeight = element.scrollHeight;
+        let dynamicScale = 1.5;
+        if (elementHeight > 5000) dynamicScale = 1.2;
+        if (elementHeight > 10000) dynamicScale = 1.0;
+
         const opt = {
           margin: [10, 5, 10, 5], 
           filename: fileName,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { 
-            scale: 1.5, 
+            scale: dynamicScale, 
             useCORS: true, 
             letterRendering: true, 
             scrollY: 0,
@@ -311,12 +327,14 @@ export default function App() {
         // Execute html2pdf
         html2pdf().set(opt).from(element).save()
           .then(() => {
+            clearTimeout(safetyTimeout);
             setIsPdfLoading(false);
             setExpandAll(false);
             setIsExportingMode(false);
             setExportTarget('all');
           })
           .catch((err: any) => {
+            clearTimeout(safetyTimeout);
             console.error("Error creating PDF", err);
             setError("Gagal membuat PDF. Dokumen mungkin terlalu besar atau ada gangguan koneksi.");
             setIsPdfLoading(false);
@@ -325,6 +343,7 @@ export default function App() {
             setExportTarget('all');
           });
       } catch (e: any) {
+        clearTimeout(safetyTimeout);
         console.error("PDF Export Exception", e);
         setError(e.message || "Terjadi kesalahan sistem saat memproses PDF.");
         setIsPdfLoading(false);
@@ -350,11 +369,22 @@ export default function App() {
     setExportTarget(target);
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
+    
+    // Safety timeout to prevent hanging (45 seconds)
+    const safetyTimeout = setTimeout(() => {
+      if (setIsJpgLoading) {
+        setIsJpgLoading(false);
+        setIsExportingMode(false);
+        setExpandAll(false);
+        setError("Proses penyimpanan gambar memakan waktu terlalu lama. Dokumen mungkin terlalu besar.");
+      }
+    }, 45000);
 
     setTimeout(() => {
       try {
         const element = document.getElementById('modul-ajar-content');
         if (!element) {
+          clearTimeout(safetyTimeout);
           setError("Gagal menemukan konten untuk disimpan.");
           setIsJpgLoading(false);
           setIsExportingMode(false);
@@ -379,13 +409,19 @@ export default function App() {
 
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
 
+        const elementHeight = element.scrollHeight;
+        let dynamicScale = 1.5;
+        if (elementHeight > 5000) dynamicScale = 1.2;
+        if (elementHeight > 10000) dynamicScale = 1.0;
+
         html2canvas(element, {
-          scale: 1.5,
+          scale: dynamicScale,
           useCORS: true,
           windowWidth: 900,
           logging: false,
           backgroundColor: '#ffffff'
         }).then((canvas: HTMLCanvasElement) => {
+          clearTimeout(safetyTimeout);
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
           element.style.padding = originalPadding;
@@ -402,6 +438,7 @@ export default function App() {
           setIsExportingMode(false);
           setExportTarget('all');
         }).catch((err: any) => {
+          clearTimeout(safetyTimeout);
           console.error("JPG Export Error:", err);
           setError("Gagal menyimpan gambar. Dokumen mungkin terlalu besar.");
           element.style.width = originalWidth;
@@ -414,6 +451,7 @@ export default function App() {
           setExportTarget('all');
         });
       } catch (e) {
+        clearTimeout(safetyTimeout);
         console.error("JPG Export Error", e);
         setError("Terjadi kesalahan sistem saat memproses gambar.");
         setIsJpgLoading(false);
@@ -762,6 +800,30 @@ export default function App() {
             expandAll={expandAll}
             toggleAccordion={toggleAccordion}
           />
+        )}
+
+        {/* Export Loading Overlay */}
+        {(isPdfLoading || isJpgLoading) && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+            <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center gap-6 border border-white/20">
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Download className="text-emerald-600 animate-bounce" size={24} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-slate-800">Sedang Memproses...</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Mohon tunggu sebentar, sistem sedang menyusun dokumen {isPdfLoading ? 'PDF' : 'Gambar'} Anda. 
+                  <br /><span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-2 block">Jangan tutup halaman ini</span>
+                </p>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-emerald-500 h-full w-2/3 animate-[shimmer_2s_infinite_linear] bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500 bg-[length:200%_100%]"></div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
