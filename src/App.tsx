@@ -42,6 +42,55 @@ export default function App() {
   const menuRef = useRef<HTMLDivElement>(null);
   const jpgMenuRef = useRef<HTMLDivElement>(null);
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) setCustomApiKey(savedKey);
+    
+    const savedMetadata = localStorage.getItem('modul_metadata');
+    if (savedMetadata) {
+      try {
+        const m = JSON.parse(savedMetadata);
+        if (m.namaPenyusun) setNamaPenyusun(m.namaPenyusun);
+        if (m.kelas) setKelas(m.kelas);
+        if (m.semester) setSemester(m.semester);
+        if (m.tahunAjaran) setTahunAjaran(m.tahunAjaran);
+        if (m.alokasiWaktu) setAlokasiWaktu(m.alokasiWaktu);
+        if (m.subject) setSubject(m.subject);
+      } catch (e) {}
+    }
+
+    const savedResult = localStorage.getItem('last_generated_modul');
+    if (savedResult) {
+      try {
+        const parsed = JSON.parse(savedResult);
+        if (parsed && parsed.judulMateri) {
+          setResult(parsed);
+        }
+      } catch (e) {
+        console.error("Failed to load saved result", e);
+      }
+    }
+  }, []);
+
+  // Save to localStorage when changed
+  useEffect(() => {
+    if (customApiKey) {
+      localStorage.setItem('gemini_api_key', customApiKey);
+    }
+  }, [customApiKey]);
+
+  useEffect(() => {
+    const metadata = { namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject };
+    localStorage.setItem('modul_metadata', JSON.stringify(metadata));
+  }, [namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject]);
+
+  useEffect(() => {
+    if (result && result !== initialData) {
+      localStorage.setItem('last_generated_modul', JSON.stringify(result));
+    }
+  }, [result]);
+
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -497,7 +546,7 @@ export default function App() {
                     {isPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} PDF <ChevronDown size={14} />
                   </button>
                   {showPdfMenu && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
+                    <div className="absolute right-0 md:right-auto md:left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
                       <button onClick={() => handleExportPDF('all')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Modul Ajar Lengkap</button>
                       <button onClick={() => handleExportPDF('lkpd')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Lembar LKPD</button>
                       <button onClick={() => handleExportPDF('penugasan_individu')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Tugas Individu</button>
@@ -512,7 +561,7 @@ export default function App() {
                     {isJpgLoading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} JPG <ChevronDown size={14} />
                   </button>
                   {showJpgMenu && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
+                    <div className="absolute right-0 md:right-auto md:left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
                       <button onClick={() => handleExportJPG('all')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Modul Ajar Lengkap</button>
                       <button onClick={() => handleExportJPG('lkpd')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Lembar LKPD</button>
                       <button onClick={() => handleExportJPG('evaluasi_tanpa_kunci')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold">Soal (Siswa)</button>
