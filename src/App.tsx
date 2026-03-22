@@ -29,6 +29,8 @@ export default function App() {
   const [exportTarget, setExportTarget] = useState('all'); 
   const [showPdfMenu, setShowPdfMenu] = useState(false);
   const [showJpgMenu, setShowJpgMenu] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState<'pdf' | 'jpg'>('pdf');
   
   const [result, setResult] = useState<any>(initialData);
   const [error, setError] = useState('');
@@ -225,8 +227,7 @@ export default function App() {
       return;
     }
 
-    setShowPdfMenu(false);
-    setShowJpgMenu(false);
+    setShowExportModal(false);
     setIsPdfLoading(true);
     setExportTarget(target);
     if (target === 'all') setExpandAll(true); 
@@ -234,6 +235,13 @@ export default function App() {
 
     setTimeout(() => {
       const element = document.getElementById('modul-ajar-content');
+      if (!element) {
+        setError("Gagal menemukan konten untuk disimpan.");
+        setIsPdfLoading(false);
+        setIsExportingMode(false);
+        return;
+      }
+
       let prefix = "Modul_Ajar";
       if (target === 'lkpd') prefix = "LKPD";
       if (target === 'penugasan_individu') prefix = "Tugas_Individu";
@@ -242,30 +250,43 @@ export default function App() {
 
       const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
       const opt = {
-        margin: [15, 5, 15, 5], 
+        margin: [10, 5, 10, 5], 
         filename: `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true, 
+          scrollY: 0,
+          logging: false
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] } 
       };
 
-      html2pdf().set(opt).from(element).save()
-        .then(() => {
-          setIsPdfLoading(false);
-          setExpandAll(false);
-          setIsExportingMode(false);
-          setExportTarget('all');
-        })
-        .catch((err: any) => {
-          console.error("Error creating PDF", err);
-          setError("Gagal membuat PDF.");
-          setIsPdfLoading(false);
-          setExpandAll(false);
-          setIsExportingMode(false);
-          setExportTarget('all');
-        });
-    }, 1000); 
+      try {
+        html2pdf().set(opt).from(element).save()
+          .then(() => {
+            setIsPdfLoading(false);
+            setExpandAll(false);
+            setIsExportingMode(false);
+            setExportTarget('all');
+          })
+          .catch((err: any) => {
+            console.error("Error creating PDF", err);
+            setError("Gagal membuat PDF. Silakan coba lagi.");
+            setIsPdfLoading(false);
+            setExpandAll(false);
+            setIsExportingMode(false);
+            setExportTarget('all');
+          });
+      } catch (e) {
+        console.error("PDF Library Error", e);
+        setError("Terjadi kesalahan pada sistem PDF.");
+        setIsPdfLoading(false);
+        setIsExportingMode(false);
+      }
+    }, 1500); 
   };
 
   const handleExportJPG = (target: string) => {
@@ -276,8 +297,7 @@ export default function App() {
       return;
     }
 
-    setShowPdfMenu(false);
-    setShowJpgMenu(false);
+    setShowExportModal(false);
     setIsJpgLoading(true);
     setExportTarget(target);
     if (target === 'all') setExpandAll(true); 
@@ -541,38 +561,108 @@ export default function App() {
             <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
               <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
-                <div className="relative" ref={menuRef}>
-                  <button onClick={() => setShowPdfMenu(!showPdfMenu)} disabled={isPdfLoading || isJpgLoading} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-sm">
-                    {isPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} PDF <ChevronDown size={14} />
-                  </button>
-                  {showPdfMenu && (
-                    <div className="absolute right-0 md:right-auto md:left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
-                      <button onClick={() => handleExportPDF('all')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Modul Ajar Lengkap</button>
-                      <button onClick={() => handleExportPDF('lkpd')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Lembar LKPD</button>
-                      <button onClick={() => handleExportPDF('penugasan_individu')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Tugas Individu</button>
-                      <button onClick={() => handleExportPDF('penugasan_kelompok')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Tugas Kelompok</button>
-                      <button onClick={() => handleExportPDF('evaluasi_tanpa_kunci')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Soal (Siswa)</button>
-                      <button onClick={() => handleExportPDF('evaluasi_dengan_kunci')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold">Soal (Guru)</button>
-                    </div>
-                  )}
-                </div>
-                <div className="relative" ref={jpgMenuRef}>
-                  <button onClick={() => setShowJpgMenu(!showJpgMenu)} disabled={isPdfLoading || isJpgLoading} className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg font-bold text-sm">
-                    {isJpgLoading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} JPG <ChevronDown size={14} />
-                  </button>
-                  {showJpgMenu && (
-                    <div className="absolute right-0 md:right-auto md:left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
-                      <button onClick={() => handleExportJPG('all')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Modul Ajar Lengkap</button>
-                      <button onClick={() => handleExportJPG('lkpd')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold border-b">Lembar LKPD</button>
-                      <button onClick={() => handleExportJPG('evaluasi_tanpa_kunci')} className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm font-semibold">Soal (Siswa)</button>
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={() => { setExportType('pdf'); setShowExportModal(true); }} 
+                  disabled={isPdfLoading || isJpgLoading} 
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-sm"
+                >
+                  {isPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} Simpan PDF
+                </button>
+                
+                <button 
+                  onClick={() => { setExportType('jpg'); setShowExportModal(true); }} 
+                  disabled={isPdfLoading || isJpgLoading} 
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg font-bold text-sm"
+                >
+                  {isJpgLoading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} Simpan Gambar
+                </button>
+
                 <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-sm">
                   {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Tersalin!' : 'Salin Teks'}
                 </button>
               </div>
             </div>
+
+            {/* Modal Export */}
+            {showExportModal && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                  <div className={`p-6 text-white flex items-center justify-between ${exportType === 'pdf' ? 'bg-indigo-600' : 'bg-sky-600'}`}>
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      {exportType === 'pdf' ? <Download size={20} /> : <ImageIcon size={20} />}
+                      Pilih Format Simpan {exportType === 'pdf' ? 'PDF' : 'Gambar'}
+                    </h3>
+                    <button onClick={() => setShowExportModal(false)} className="hover:bg-white/20 p-1 rounded-lg transition-colors">
+                      <AlertCircle className="rotate-45" size={24} />
+                    </button>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <p className="text-sm text-slate-500 mb-4 px-2">Silakan pilih bagian yang ingin Anda simpan sebagai {exportType === 'pdf' ? 'dokumen PDF' : 'file gambar'}:</p>
+                    
+                    <button 
+                      onClick={() => exportType === 'pdf' ? handleExportPDF('all') : handleExportJPG('all')}
+                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                    >
+                      <span className="font-bold text-slate-700">Modul Ajar Lengkap</span>
+                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                    </button>
+
+                    <button 
+                      onClick={() => exportType === 'pdf' ? handleExportPDF('lkpd') : handleExportJPG('lkpd')}
+                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                    >
+                      <span className="font-bold text-slate-700">Lembar LKPD</span>
+                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                    </button>
+
+                    {exportType === 'pdf' && (
+                      <>
+                        <button 
+                          onClick={() => handleExportPDF('penugasan_individu')}
+                          className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                        >
+                          <span className="font-bold text-slate-700">Tugas Individu</span>
+                          <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleExportPDF('penugasan_kelompok')}
+                          className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                        >
+                          <span className="font-bold text-slate-700">Tugas Kelompok</span>
+                          <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                        </button>
+                      </>
+                    )}
+
+                    <button 
+                      onClick={() => exportType === 'pdf' ? handleExportPDF('evaluasi_tanpa_kunci') : handleExportJPG('evaluasi_tanpa_kunci')}
+                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                    >
+                      <span className="font-bold text-slate-700">Soal Evaluasi (Siswa)</span>
+                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                    </button>
+
+                    {exportType === 'pdf' && (
+                      <button 
+                        onClick={() => handleExportPDF('evaluasi_dengan_kunci')}
+                        className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                      >
+                        <span className="font-bold text-slate-700">Soal Evaluasi (Guru/Kunci)</span>
+                        <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-4 bg-slate-50 flex justify-end">
+                    <button 
+                      onClick={() => setShowExportModal(false)}
+                      className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
