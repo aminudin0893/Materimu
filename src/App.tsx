@@ -121,6 +121,14 @@ export default function App() {
     }
   }, []);
 
+  const resetAllStates = () => {
+    setIsLoading(false);
+    setIsPdfLoading(false);
+    setIsJpgLoading(false);
+    setIsExportingMode(false);
+    setError('');
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) { setError('Silakan masukkan judul materi.'); return; }
@@ -267,37 +275,37 @@ export default function App() {
     setIsExportingMode(true); 
 
     setTimeout(() => {
-      const element = document.getElementById('modul-ajar-content');
-      if (!element) {
-        setError("Gagal menemukan konten untuk disimpan.");
-        setIsPdfLoading(false);
-        setIsExportingMode(false);
-        return;
-      }
-
-      let prefix = "Modul_Ajar";
-      if (target === 'lkpd') prefix = "LKPD";
-      if (target === 'penugasan_individu') prefix = "Tugas_Individu";
-      if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
-      if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
-
-      const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
-      const opt = {
-        margin: [10, 5, 10, 5], 
-        filename: `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          letterRendering: true, 
-          scrollY: 0,
-          logging: false
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] } 
-      };
-
       try {
+        const element = document.getElementById('modul-ajar-content');
+        if (!element) {
+          setError("Gagal menemukan konten untuk disimpan.");
+          setIsPdfLoading(false);
+          setIsExportingMode(false);
+          return;
+        }
+
+        let prefix = "Modul_Ajar";
+        if (target === 'lkpd') prefix = "LKPD";
+        if (target === 'penugasan_individu') prefix = "Tugas_Individu";
+        if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
+        if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
+
+        const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
+        const opt = {
+          margin: [10, 5, 10, 5], 
+          filename: `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { 
+            scale: 1.5, // Reduced scale for better performance on large docs
+            useCORS: true, 
+            letterRendering: true, 
+            scrollY: 0,
+            logging: false
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+          pagebreak: { mode: ['css', 'legacy'] } 
+        };
+
         html2pdf().set(opt).from(element).save()
           .then(() => {
             setIsPdfLoading(false);
@@ -307,7 +315,7 @@ export default function App() {
           })
           .catch((err: any) => {
             console.error("Error creating PDF", err);
-            setError("Gagal membuat PDF. Silakan coba lagi.");
+            setError("Gagal membuat PDF. Dokumen mungkin terlalu besar atau ada gangguan koneksi.");
             setIsPdfLoading(false);
             setExpandAll(false);
             setIsExportingMode(false);
@@ -315,8 +323,9 @@ export default function App() {
           });
       } catch (e) {
         console.error("PDF Library Error", e);
-        setError("Terjadi kesalahan pada sistem PDF.");
+        setError("Terjadi kesalahan sistem saat memproses PDF.");
         setIsPdfLoading(false);
+        setExpandAll(false);
         setIsExportingMode(false);
       }
     }, 1500); 
@@ -337,53 +346,68 @@ export default function App() {
     setIsExportingMode(true); 
 
     setTimeout(() => {
-      const element = document.getElementById('modul-ajar-content')!;
-      const originalWidth = element.style.width;
-      const originalMaxWidth = element.style.maxWidth;
-      const originalPadding = element.style.padding;
-      
-      element.style.width = '800px';
-      element.style.maxWidth = '800px';
-      element.style.padding = '30px 40px'; 
-      
-      let prefix = "Modul_Ajar";
-      if (target === 'lkpd') prefix = "LKPD";
-      if (target === 'penugasan_individu') prefix = "Tugas_Individu";
-      if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
-      if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
+      try {
+        const element = document.getElementById('modul-ajar-content');
+        if (!element) {
+          setError("Gagal menemukan konten untuk disimpan.");
+          setIsJpgLoading(false);
+          setIsExportingMode(false);
+          return;
+        }
 
-      const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
+        const originalWidth = element.style.width;
+        const originalMaxWidth = element.style.maxWidth;
+        const originalPadding = element.style.padding;
+        
+        element.style.width = '800px';
+        element.style.maxWidth = '800px';
+        element.style.padding = '30px 40px'; 
+        
+        let prefix = "Modul_Ajar";
+        if (target === 'lkpd') prefix = "LKPD";
+        if (target === 'penugasan_individu') prefix = "Tugas_Individu";
+        if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
+        if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
 
-      html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        windowWidth: 900 
-      }).then((canvas: HTMLCanvasElement) => {
-        element.style.width = originalWidth;
-        element.style.maxWidth = originalMaxWidth;
-        element.style.padding = originalPadding;
+        const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
 
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        const link = document.createElement('a');
-        link.download = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.jpg`;
-        link.href = imgData;
-        link.click();
+        html2canvas(element, {
+          scale: 1.5,
+          useCORS: true,
+          windowWidth: 900,
+          logging: false
+        }).then((canvas: HTMLCanvasElement) => {
+          element.style.width = originalWidth;
+          element.style.maxWidth = originalMaxWidth;
+          element.style.padding = originalPadding;
 
+          const imgData = canvas.toDataURL('image/jpeg', 0.9);
+          const link = document.createElement('a');
+          link.download = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.jpg`;
+          link.href = imgData;
+          link.click();
+
+          setIsJpgLoading(false);
+          setExpandAll(false);
+          setIsExportingMode(false);
+          setExportTarget('all');
+        }).catch((err: any) => {
+          console.error("Error creating JPG", err);
+          setError("Gagal membuat gambar JPG. Dokumen mungkin terlalu besar.");
+          element.style.width = originalWidth;
+          element.style.maxWidth = originalMaxWidth;
+          element.style.padding = originalPadding;
+          setIsJpgLoading(false);
+          setExpandAll(false);
+          setIsExportingMode(false);
+          setExportTarget('all');
+        });
+      } catch (e) {
+        console.error("JPG Export Error", e);
+        setError("Terjadi kesalahan sistem saat memproses gambar.");
         setIsJpgLoading(false);
-        setExpandAll(false);
         setIsExportingMode(false);
-        setExportTarget('all');
-      }).catch((err: any) => {
-        console.error("Error creating JPG", err);
-        setError("Gagal membuat JPG.");
-        element.style.width = originalWidth;
-        element.style.maxWidth = originalMaxWidth;
-        element.style.padding = originalPadding;
-        setIsJpgLoading(false);
-        setExpandAll(false);
-        setIsExportingMode(false);
-        setExportTarget('all');
-      });
+      }
     }, 1000);
   };
 
@@ -566,7 +590,20 @@ export default function App() {
                 </button>
               </div>
             </form>
-            {error && (<div className="mt-3 p-3 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 border border-red-100 text-sm"><AlertCircle size={16} /> <p>{error}</p></div>)}
+            {error && (
+              <div className="mt-3 p-3 bg-red-50 text-red-600 rounded-xl flex items-center justify-between border border-red-100 text-sm animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} className="shrink-0" /> 
+                  <p>{error}</p>
+                </div>
+                <button 
+                  onClick={resetAllStates}
+                  className="ml-2 px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
+                >
+                  Tutup
+                </button>
+              </div>
+            )}
           </section>
         )}
 
