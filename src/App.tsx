@@ -261,6 +261,23 @@ export default function App() {
     }
   };
 
+  const handlePrint = (target: string) => {
+    if (!result) return;
+    setExportTarget(target);
+    if (target === 'all') setExpandAll(true);
+    setIsExportingMode(true);
+    setShowExportModal(false);
+
+    // Wait for DOM to render expanded content
+    setTimeout(() => {
+      window.print();
+      // Reset after print dialog closes
+      setIsExportingMode(false);
+      setExpandAll(false);
+      setExportTarget('all');
+    }, 1000);
+  };
+
   const handleExportPDF = (target: string) => {
     if (!result) return;
     
@@ -283,7 +300,7 @@ export default function App() {
         setIsPdfLoading(false);
         setIsExportingMode(false);
         setExpandAll(false);
-        setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar atau browser kehabisan memori.");
+        setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar untuk diproses secara otomatis. Silakan gunakan fitur 'Cetak Langsung (Print)' untuk hasil yang lebih stabil.");
       }
     }, 45000);
 
@@ -726,6 +743,19 @@ export default function App() {
                       <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
                     </button>
 
+                    {exportType === 'pdf' && (
+                      <button 
+                        onClick={() => handlePrint('all')}
+                        className="w-full text-left px-4 py-4 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-100 flex items-center justify-between group transition-all"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-bold text-emerald-700">Cetak Langsung (Print)</span>
+                          <span className="text-[10px] text-emerald-600 font-medium">Paling Stabil & Cepat (Rekomendasi)</span>
+                        </div>
+                        <Download className="-rotate-90 text-emerald-400 group-hover:text-emerald-600 transition-colors" size={18} />
+                      </button>
+                    )}
+
                     <button 
                       onClick={() => exportType === 'pdf' ? handleExportPDF('lkpd') : handleExportJPG('lkpd')}
                       className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
@@ -786,20 +816,22 @@ export default function App() {
         )}
 
         {result && (
-          <ModulContent 
-            result={result}
-            subject={subject}
-            kelas={kelas}
-            semester={semester}
-            tahunAjaran={tahunAjaran}
-            namaPenyusun={namaPenyusun}
-            alokasiWaktu={alokasiWaktu}
-            isExportingMode={isExportingMode}
-            displayTarget={isExportingMode ? exportTarget : viewMode}
-            expandedSubtopics={expandedSubtopics}
-            expandAll={expandAll}
-            toggleAccordion={toggleAccordion}
-          />
+          <div id="modul-ajar-content-container">
+            <ModulContent 
+              result={result}
+              subject={subject}
+              kelas={kelas}
+              semester={semester}
+              tahunAjaran={tahunAjaran}
+              namaPenyusun={namaPenyusun}
+              alokasiWaktu={alokasiWaktu}
+              isExportingMode={isExportingMode}
+              displayTarget={isExportingMode ? exportTarget : viewMode}
+              expandedSubtopics={expandedSubtopics}
+              expandAll={expandAll}
+              toggleAccordion={toggleAccordion}
+            />
+          </div>
         )}
 
         {/* Export Loading Overlay */}
@@ -822,6 +854,12 @@ export default function App() {
               <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-emerald-500 h-full w-2/3 animate-[shimmer_2s_infinite_linear] bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500 bg-[length:200%_100%]"></div>
               </div>
+              <button 
+                onClick={resetAllStates}
+                className="mt-2 px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold transition-colors"
+              >
+                Batalkan & Reset
+              </button>
             </div>
           </div>
         )}

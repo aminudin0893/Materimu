@@ -11,3 +11,37 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+@media print {
+  body {
+    background-color: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .no-print, 
+  header, 
+  section:not(#modul-ajar-content-container), 
+  nav, 
+  button, 
+  .fixed, 
+  .absolute {
+    display: none !important;
+  }
+
+  #modul-ajar-content-container {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #modul-ajar-content {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+}
