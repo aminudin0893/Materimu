@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize, Minimize
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
@@ -24,6 +24,7 @@ export default function App() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isJpgLoading, setIsJpgLoading] = useState(false);
   const [isExportingMode, setIsExportingMode] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   
   // State View Mode dan Export Target
   const [viewMode, setViewMode] = useState('all'); 
@@ -189,7 +190,9 @@ export default function App() {
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
           12. ${numQuestions} Soal PG + Kunci. 
-          13. Teka-Teki Silang (TTS) minimal 5 kata (mendatar & menurun) yang relevan dengan materi.
+          13. Teka-Teki Silang (TTS) minimal 5 kata (mendatar & menurun) yang relevan dengan materi. 
+              Wajib sertakan koordinat (x, y) untuk setiap kata di grid 10x10. 
+              Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
@@ -246,8 +249,8 @@ export default function App() {
               tekaTekiSilang: {
                 type: "object",
                 properties: {
-                  mendatar: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } },
-                  menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } }
+                  mendatar: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" }, x: { type: "integer" }, y: { type: "integer" } } } },
+                  menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" }, x: { type: "integer" }, y: { type: "integer" } } } }
                 }
               },
               instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
@@ -642,7 +645,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 pb-20 relative">
+    <div className={`min-h-screen ${isFocusMode ? 'bg-white' : 'bg-slate-50'} text-slate-800 font-sans p-4 md:p-8 pb-20 relative`}>
       {/* Refresh Button */}
       {!isExportingMode && (
         <button 
@@ -654,9 +657,9 @@ export default function App() {
         </button>
       )}
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className={`max-w-4xl mx-auto space-y-6 ${isFocusMode ? 'pt-0' : ''}`}>
         
-        {!isExportingMode && (
+        {!isExportingMode && !isFocusMode && (
           <header className="text-center pt-6 pb-2">
             <div className="inline-flex items-center justify-center p-3 bg-emerald-600 text-white rounded-xl mb-4 shadow-sm">
               <BookOpen size={28} />
@@ -667,7 +670,7 @@ export default function App() {
           </header>
         )}
 
-        {!isExportingMode && (
+        {!isExportingMode && !isFocusMode && (
           <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
             <form onSubmit={handleGenerate} className="space-y-4">
               <div className="flex flex-col md:flex-row gap-3">
@@ -791,10 +794,10 @@ export default function App() {
           </section>
         )}
 
-        {result && !isExportingMode && (
+        {result && (
           <section className="space-y-4">
-            <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
-              {[
+            <div className={`flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner ${isFocusMode ? 'fixed top-4 right-4 z-50 bg-white/80 backdrop-blur-md shadow-lg p-2 rounded-2xl border border-slate-200 w-auto' : ''}`}>
+              {!isFocusMode && [
                 { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
                 { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
                 { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
@@ -812,9 +815,17 @@ export default function App() {
                   {tab.icon} {tab.label}
                 </button>
               ))}
+              <button
+                onClick={() => setIsFocusMode(!isFocusMode)}
+                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isFocusMode ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700 hover:bg-slate-400'}`}
+                title={isFocusMode ? "Keluar Mode Fokus" : "Mode Fokus"}
+              >
+                {isFocusMode ? <Minimize size={16} /> : <Maximize size={16} />}
+                {isFocusMode ? "" : "Fokus"}
+              </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
+            <div className={`flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3 ${isFocusMode ? 'hidden' : ''}`}>
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
               <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
                 <button 

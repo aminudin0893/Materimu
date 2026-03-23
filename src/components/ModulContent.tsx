@@ -323,16 +323,57 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Grid TTS (Placeholder Visual) */}
-            <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl" style={{ pageBreakInside: 'avoid' }}>
-              <div className="grid grid-cols-10 gap-1 mb-4">
-                {Array.from({ length: 100 }).map((_, i) => (
-                  <div key={i} className={`w-6 h-6 border ${Math.random() > 0.7 ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[8px] font-bold text-slate-400`}>
-                    {Math.random() > 0.9 ? Math.floor(Math.random() * 10) + 1 : ''}
-                  </div>
-                ))}
+            {/* Grid TTS Dinamis */}
+            <div className="flex flex-col items-center justify-start p-4 bg-slate-50 border border-slate-200 rounded-2xl overflow-auto" style={{ pageBreakInside: 'avoid' }}>
+              <div className="grid grid-cols-10 gap-0.5 bg-slate-300 border border-slate-400 p-0.5 shadow-md mb-4">
+                {(() => {
+                  const gridSize = 10;
+                  const grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
+                  
+                  // Fill grid logic
+                  result.tekaTekiSilang.mendatar?.forEach((item: any) => {
+                    const { x, y, jawaban, nomor } = item;
+                    if (typeof x === 'number' && typeof y === 'number' && x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                      if (!grid[y][x]) grid[y][x] = { nomor };
+                      for (let i = 0; i < (jawaban?.length || 0); i++) {
+                        if (x + i < gridSize) {
+                          if (!grid[y][x + i]) grid[y][x + i] = { active: true };
+                          else grid[y][x + i].active = true;
+                        }
+                      }
+                    }
+                  });
+
+                  result.tekaTekiSilang.menurun?.forEach((item: any) => {
+                    const { x, y, jawaban, nomor } = item;
+                    if (typeof x === 'number' && typeof y === 'number' && x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                      if (!grid[y][x]) grid[y][x] = { nomor };
+                      else if (nomor) grid[y][x].nomor = nomor;
+                      
+                      for (let i = 0; i < (jawaban?.length || 0); i++) {
+                        if (y + i < gridSize) {
+                          if (!grid[y + i][x]) grid[y + i][x] = { active: true };
+                          else grid[y + i][x].active = true;
+                        }
+                      }
+                    }
+                  });
+
+                  return grid.map((row, y) => 
+                    row.map((cell, x) => (
+                      <div 
+                        key={`${x}-${y}`} 
+                        className={`w-6 h-6 sm:w-8 sm:h-8 border border-slate-400 flex items-center justify-center relative ${cell?.active || cell?.nomor ? 'bg-white' : 'bg-slate-800'}`}
+                      >
+                        {cell?.nomor && (
+                          <span className="absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] font-bold leading-none text-slate-800">{cell.nomor}</span>
+                        )}
+                      </div>
+                    ))
+                  );
+                })()}
               </div>
-              <p className="text-xs text-slate-500 italic text-center">Visualisasi kotak TTS di atas adalah ilustrasi. Silakan gunakan pertanyaan di bawah untuk mengisi kotak yang tersedia.</p>
+              <p className="text-[10px] text-slate-500 italic text-center max-w-xs">Kotak di atas disinkronkan dengan pertanyaan. Gunakan petunjuk di bawah untuk mengisi kotak yang tersedia.</p>
             </div>
 
             {/* Pertanyaan TTS */}
