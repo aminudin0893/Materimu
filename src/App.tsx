@@ -208,6 +208,14 @@ export default function App() {
                 repaired += ' ""';
              }
           }
+        } else if (inString) {
+           // We already closed the string, but check if it was a key
+           const lastColon = trimmedRepaired.lastIndexOf(':');
+           const lastBrace = trimmedRepaired.lastIndexOf('{');
+           if (lastColon < lastBrace || lastColon === -1) {
+              // It was likely a key, add a colon and value
+              repaired += ': ""';
+           }
         }
         repaired += closer;
       }
@@ -220,6 +228,7 @@ export default function App() {
     if (!topic.trim()) { setError('Silakan masukkan judul materi.'); return; }
 
     setIsLoading(true); setError(''); setCopied(false); 
+    setResult(null); // Clear previous result to show loading state clearly
     setExpandedSubtopics([]); setExpandAll(false); setShowPdfMenu(false); setShowJpgMenu(false); setViewMode('all');
 
     const apiKey = customApiKey || process.env.GEMINI_API_KEY!;
@@ -273,7 +282,7 @@ export default function App() {
               Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
-          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan. Jika konten terlalu panjang, prioritaskan kualitas poin-poin utama daripada narasi yang berlebihan. JANGAN MENGULANG INFORMASI YANG SAMA.`,
+          PENTING: Pastikan seluruh konten terisi LENGKAP DAN DETAIL sesuai dengan skema JSON yang diminta. Jangan ada bagian yang dikosongkan. Jika konten terlalu panjang, tetap prioritaskan kelengkapan seluruh bagian daripada narasi yang berlebihan di satu bagian saja. JANGAN PERNAH MEMBERIKAN STRING KOSONG ATAU ARRAY KOSONG UNTUK FIELD YANG DIMINTA.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.7,
@@ -333,7 +342,7 @@ export default function App() {
               },
               instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
             },
-            required: ["judulMateri", "modelPembelajaran", "tp", "atpTabel", "pengertian", "subTopik", "pilihanGanda"]
+            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian"]
           }
         }
       });
@@ -370,6 +379,10 @@ export default function App() {
            throw new Error('AI memberikan format yang tidak valid. Silakan coba lagi.');
         }
         
+        if (cleanJson.trim() === '{}') {
+           throw new Error('AI memberikan respon kosong. Silakan coba lagi.');
+        }
+        
         // Attempt to repair truncated JSON
         try {
           cleanJson = repairJson(cleanJson);
@@ -379,10 +392,19 @@ export default function App() {
         
         try {
           const parsedResult = JSON.parse(cleanJson);
+          console.log("Parsed Result:", parsedResult);
           
-          // Validasi minimal field
-          if (!parsedResult.judulMateri || !parsedResult.tp) {
-            throw new Error('Data yang dihasilkan tidak lengkap.');
+          // Validasi minimal field (harus ada field utama dan tidak kosong)
+          const requiredFields = ['judulMateri', 'tp', 'atpTabel', 'pengertian', 'subTopik', 'pilihanGanda'];
+          const isEmpty = (val: any) => !val || (Array.isArray(val) && val.length === 0) || (typeof val === 'object' && Object.keys(val).length === 0);
+          const missingOrEmptyFields = requiredFields.filter(field => isEmpty(parsedResult[field]));
+          
+          if (missingOrEmptyFields.length > 0) {
+            console.warn('Missing or empty fields in AI response:', missingOrEmptyFields);
+            // If too many fields are missing, throw error to trigger last resort or retry
+            if (missingOrEmptyFields.includes('judulMateri') || missingOrEmptyFields.includes('tp') || missingOrEmptyFields.length > 2 || Object.keys(parsedResult).length < 5) {
+              throw new Error('Data yang dihasilkan tidak lengkap.');
+            }
           }
 
           parsedResult.generatedSubject = subject; 
@@ -397,7 +419,9 @@ export default function App() {
              try {
                 const lastValidJson = repairJson(cleanJson.substring(0, cleanJson.lastIndexOf('}') + 1));
                 const parsedResult = JSON.parse(lastValidJson);
-                if (parsedResult.judulMateri) {
+                console.log("Last Resort Parsed Result:", parsedResult);
+                const isEmpty = (val: any) => !val || (Array.isArray(val) && val.length === 0) || (typeof val === 'object' && Object.keys(val).length === 0);
+                if (parsedResult.judulMateri && !isEmpty(parsedResult.tp) && !isEmpty(parsedResult.atpTabel)) {
                    parsedResult.generatedSubject = subject;
                    setResult(parsedResult);
                    return;
