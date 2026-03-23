@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { motion, AnimatePresence } from 'motion/react';
-import { Share2, Download, Maximize2, X, Info } from 'lucide-react';
+import { Share2, Download, Maximize2, X, Info, Printer } from 'lucide-react';
 
 interface MindMapProps {
   data: {
@@ -9,6 +9,7 @@ interface MindMapProps {
     subTopik: {
       judulSub: string;
       penjelasan: string;
+      subSubTopik?: string[];
     }[];
   };
 }
@@ -40,11 +41,15 @@ export const MindMap: React.FC<MindMapProps> = ({ data }) => {
       children: data.subTopik.map(sub => ({
         name: sub.judulSub,
         explanation: sub.penjelasan,
-        children: [] // Can add more depth if needed
+        children: sub.subSubTopik?.map(ss => ({
+          name: ss,
+          explanation: `Bagian detail dari ${sub.judulSub}: ${ss}`,
+          children: []
+        })) || []
       }))
     };
 
-    const treeLayout = d3.tree().size([2 * Math.PI, Math.min(width, height) / 2 - 100]);
+    const treeLayout = d3.tree().size([2 * Math.PI, Math.min(width, height) / 2 - 120]);
     const root = d3.hierarchy(rootData);
     treeLayout(root);
 
@@ -79,26 +84,46 @@ export const MindMap: React.FC<MindMapProps> = ({ data }) => {
       });
 
     node.append("circle")
-      .attr("fill", (d: any) => d.depth === 0 ? "#059669" : "#10b981")
-      .attr("r", (d: any) => d.depth === 0 ? 10 : 7)
+      .attr("fill", (d: any) => {
+        if (d.depth === 0) return "#059669";
+        if (d.depth === 1) return "#10b981";
+        return "#34d399";
+      })
+      .attr("r", (d: any) => {
+        if (d.depth === 0) return 12;
+        if (d.depth === 1) return 8;
+        return 5;
+      })
       .attr("stroke", "white")
       .attr("stroke-width", 2)
       .on("mouseover", function() {
-        d3.select(this).transition().duration(200).attr("r", (d: any) => d.depth === 0 ? 12 : 9);
+        d3.select(this).transition().duration(200).attr("r", (d: any) => {
+          if (d.depth === 0) return 14;
+          if (d.depth === 1) return 10;
+          return 7;
+        });
       })
       .on("mouseout", function() {
-        d3.select(this).transition().duration(200).attr("r", (d: any) => d.depth === 0 ? 10 : 7);
+        d3.select(this).transition().duration(200).attr("r", (d: any) => {
+          if (d.depth === 0) return 12;
+          if (d.depth === 1) return 8;
+          return 5;
+        });
       });
 
     node.append("text")
       .attr("dy", "0.31em")
-      .attr("x", (d: any) => d.x < Math.PI ? 10 : -10)
+      .attr("x", (d: any) => d.x < Math.PI ? 12 : -12)
       .attr("text-anchor", (d: any) => d.x < Math.PI ? "start" : "end")
       .attr("transform", (d: any) => d.x >= Math.PI ? "rotate(180)" : null)
       .text((d: any) => d.data.name)
-      .attr("font-size", (d: any) => d.depth === 0 ? "14px" : "12px")
+      .attr("font-size", (d: any) => {
+        if (d.depth === 0) return "14px";
+        if (d.depth === 1) return "12px";
+        return "10px";
+      })
       .attr("font-weight", (d: any) => d.depth === 0 ? "bold" : "normal")
-      .attr("fill", "#1e293b")
+      .attr("fill", (d: any) => d.depth === 2 ? "#64748b" : "#1e293b")
       .clone(true).lower()
       .attr("stroke", "white")
       .attr("stroke-width", 3);
@@ -155,6 +180,10 @@ export const MindMap: React.FC<MindMapProps> = ({ data }) => {
     });
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -180,6 +209,13 @@ export const MindMap: React.FC<MindMapProps> = ({ data }) => {
             title="Unduh Gambar"
           >
             <Download size={16} />
+          </button>
+          <button 
+            onClick={handlePrint}
+            className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all text-slate-500 hover:text-emerald-600" 
+            title="Cetak Mind Map"
+          >
+            <Printer size={16} />
           </button>
           <button className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all text-slate-500 hover:text-emerald-600" title="Perbesar">
             <Maximize2 size={16} />

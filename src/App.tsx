@@ -228,7 +228,17 @@ export default function App() {
               },
               pengertian: { type: "string" },
               dalil: { type: "array", items: { type: "object", properties: { sumber: { type: "string" }, teksArab: { type: "string" }, terjemahan: { type: "string" } } } },
-              subTopik: { type: "array", items: { type: "object", properties: { judulSub: { type: "string" }, penjelasan: { type: "string" } } } },
+              subTopik: { 
+                type: "array", 
+                items: { 
+                  type: "object", 
+                  properties: { 
+                    judulSub: { type: "string" }, 
+                    penjelasan: { type: "string" },
+                    subSubTopik: { type: "array", items: { type: "string" }, description: "Daftar poin-poin detail atau sub-sub materi dari sub-topik ini." }
+                  } 
+                } 
+              },
               lkpd: { type: "object", properties: { judul: { type: "string" }, tujuan: { type: "string" }, langkahKerja: { type: "array", items: { type: "string" } } } },
               tugasIndividu: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               tugasKelompok: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
