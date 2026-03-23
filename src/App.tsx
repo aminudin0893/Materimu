@@ -304,13 +304,20 @@ export default function App() {
       }
     }, 45000);
 
-    // Wait for DOM update
+    // Wait for DOM update to ensure everything is rendered
     setTimeout(() => {
       try {
         const element = document.getElementById('modul-ajar-content');
         if (!element) {
           throw new Error("Gagal menemukan konten untuk disimpan.");
         }
+
+        // Force a specific width for PDF generation to ensure layout consistency
+        const originalWidth = element.style.width;
+        const originalMaxWidth = element.style.maxWidth;
+        element.style.width = '794px'; // A4 width at 96dpi
+        element.style.maxWidth = '794px';
+        window.scrollTo(0, 0);
 
         let prefix = "Modul_Ajar";
         if (target === 'lkpd') prefix = "LKPD";
@@ -322,43 +329,48 @@ export default function App() {
         const fileName = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`;
 
         const elementHeight = element.scrollHeight;
-        let dynamicScale = 1.5;
-        if (elementHeight > 5000) dynamicScale = 1.2;
-        if (elementHeight > 10000) dynamicScale = 1.0;
+        let dynamicScale = 1.2; // Start with a lower scale for better stability
+        if (elementHeight > 5000) dynamicScale = 1.0;
+        if (elementHeight > 10000) dynamicScale = 0.8;
 
         const opt = {
-          margin: [10, 5, 10, 5], 
+          margin: [10, 10, 10, 10], 
           filename: fileName,
-          image: { type: 'jpeg', quality: 0.95 },
+          image: { type: 'jpeg', quality: 0.90 }, // Slightly lower quality for better memory handling
           html2canvas: { 
             scale: dynamicScale, 
             useCORS: true, 
             letterRendering: true, 
             scrollY: 0,
-            logging: false
+            logging: false,
+            backgroundColor: '#ffffff',
+            allowTaint: true
           },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
           pagebreak: { mode: ['css', 'legacy'] } 
         };
 
-        // Execute html2pdf
-        html2pdf().set(opt).from(element).save()
-          .then(() => {
-            clearTimeout(safetyTimeout);
-            setIsPdfLoading(false);
-            setExpandAll(false);
-            setIsExportingMode(false);
-            setExportTarget('all');
-          })
-          .catch((err: any) => {
-            clearTimeout(safetyTimeout);
-            console.error("Error creating PDF", err);
-            setError("Gagal membuat PDF. Dokumen mungkin terlalu besar atau ada gangguan koneksi.");
-            setIsPdfLoading(false);
-            setExpandAll(false);
-            setIsExportingMode(false);
-            setExportTarget('all');
-          });
+        // Execute html2pdf with a more robust chain
+        html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf: any) => {
+          pdf.save();
+          clearTimeout(safetyTimeout);
+          setIsPdfLoading(false);
+          setExpandAll(false);
+          setIsExportingMode(false);
+          setExportTarget('all');
+          element.style.width = originalWidth;
+          element.style.maxWidth = originalMaxWidth;
+        }).catch((err: any) => {
+          clearTimeout(safetyTimeout);
+          console.error("Error creating PDF", err);
+          setError("Gagal membuat PDF. Dokumen mungkin terlalu besar. Silakan gunakan fitur 'Cetak Langsung (Print)' sebagai alternatif.");
+          setIsPdfLoading(false);
+          setExpandAll(false);
+          setIsExportingMode(false);
+          setExportTarget('all');
+          element.style.width = originalWidth;
+          element.style.maxWidth = originalMaxWidth;
+        });
       } catch (e: any) {
         clearTimeout(safetyTimeout);
         console.error("PDF Export Exception", e);
@@ -368,7 +380,7 @@ export default function App() {
         setIsExportingMode(false);
         setExportTarget('all');
       }
-    }, 1500); 
+    }, 2500); 
   };
 
   const handleExportJPG = (target: string) => {
@@ -398,20 +410,22 @@ export default function App() {
     }, 45000);
 
     setTimeout(() => {
-      try {
-        const element = document.getElementById('modul-ajar-content');
-        if (!element) {
-          clearTimeout(safetyTimeout);
-          setError("Gagal menemukan konten untuk disimpan.");
-          setIsJpgLoading(false);
-          setIsExportingMode(false);
-          return;
-        }
+      const element = document.getElementById('modul-ajar-content');
+      if (!element) {
+        clearTimeout(safetyTimeout);
+        setError("Gagal menemukan konten untuk disimpan.");
+        setIsJpgLoading(false);
+        setIsExportingMode(false);
+        return;
+      }
 
-        const originalWidth = element.style.width;
-        const originalMaxWidth = element.style.maxWidth;
-        const originalPadding = element.style.padding;
-        const originalBackground = element.style.background;
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      const originalPadding = element.style.padding;
+      const originalBackground = element.style.background;
+
+      try {
+        window.scrollTo(0, 0);
         
         element.style.width = '800px';
         element.style.maxWidth = '800px';
@@ -427,29 +441,29 @@ export default function App() {
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
 
         const elementHeight = element.scrollHeight;
-        let dynamicScale = 1.5;
-        if (elementHeight > 5000) dynamicScale = 1.2;
-        if (elementHeight > 10000) dynamicScale = 1.0;
+        let dynamicScale = 1.2;
+        if (elementHeight > 5000) dynamicScale = 1.0;
+        if (elementHeight > 10000) dynamicScale = 0.8;
 
-        html2canvas(element, {
+        // Use html2canvas from the window object (loaded via html2pdf bundle)
+        const html2canvasLib = (window as any).html2canvas;
+        
+        html2canvasLib(element, {
           scale: dynamicScale,
           useCORS: true,
           windowWidth: 900,
           logging: false,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          scrollY: 0
         }).then((canvas: HTMLCanvasElement) => {
           clearTimeout(safetyTimeout);
-          element.style.width = originalWidth;
-          element.style.maxWidth = originalMaxWidth;
-          element.style.padding = originalPadding;
-          element.style.background = originalBackground;
-
+          
           const imgData = canvas.toDataURL('image/jpeg', 0.9);
           const link = document.createElement('a');
           link.download = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.jpg`;
           link.href = imgData;
           link.click();
-
+          
           setIsJpgLoading(false);
           setExpandAll(false);
           setIsExportingMode(false);
@@ -458,14 +472,15 @@ export default function App() {
           clearTimeout(safetyTimeout);
           console.error("JPG Export Error:", err);
           setError("Gagal menyimpan gambar. Dokumen mungkin terlalu besar.");
-          element.style.width = originalWidth;
-          element.style.maxWidth = originalMaxWidth;
-          element.style.padding = originalPadding;
-          element.style.background = originalBackground;
           setIsJpgLoading(false);
           setExpandAll(false);
           setIsExportingMode(false);
           setExportTarget('all');
+        }).finally(() => {
+          element.style.width = originalWidth;
+          element.style.maxWidth = originalMaxWidth;
+          element.style.padding = originalPadding;
+          element.style.background = originalBackground;
         });
       } catch (e) {
         clearTimeout(safetyTimeout);
@@ -473,8 +488,12 @@ export default function App() {
         setError("Terjadi kesalahan sistem saat memproses gambar.");
         setIsJpgLoading(false);
         setIsExportingMode(false);
+        element.style.width = originalWidth;
+        element.style.maxWidth = originalMaxWidth;
+        element.style.padding = originalPadding;
+        element.style.background = originalBackground;
       }
-    }, 1500);
+    }, 2500);
   };
 
   const handleCopy = () => {
