@@ -143,20 +143,73 @@ export default function App() {
     // Check if it's truncated (doesn't end with })
     if (!repaired.endsWith('}')) {
       const stack: string[] = [];
+      let inString = false;
+      let escaped = false;
+      
       for (let i = 0; i < repaired.length; i++) {
         const char = repaired[i];
-        if (char === '{') stack.push('}');
-        else if (char === '[') stack.push(']');
-        else if (char === '}' || char === ']') {
-          if (stack.length > 0 && stack[stack.length - 1] === char) {
-            stack.pop();
+        
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        
+        if (!inString) {
+          if (char === '{') stack.push('}');
+          else if (char === '[') stack.push(']');
+          else if (char === '}' || char === ']') {
+            if (stack.length > 0 && stack[stack.length - 1] === char) {
+              stack.pop();
+            }
           }
         }
       }
       
+      // If we're inside a string, close it
+      if (inString) {
+        repaired += '"';
+      }
+      
       // Close open structures in reverse order
       while (stack.length > 0) {
-        repaired += stack.pop();
+        const closer = stack.pop();
+        // If the last character is a colon or comma, it's a truncated key-value pair or list item
+        // We might need to add a dummy value
+        let trimmedRepaired = repaired.trim();
+        const lastChar = trimmedRepaired.slice(-1);
+        
+        if (lastChar === ':') {
+          repaired += ' ""';
+        } else if (lastChar === ',') {
+          // Remove trailing comma if it's at the end of an object/array
+          repaired = trimmedRepaired.slice(0, -1);
+        } else if (lastChar === '{' || lastChar === '[') {
+          // Empty object or array, just close it
+        } else if (!inString && lastChar !== '"' && lastChar !== '}' && lastChar !== ']' && !isNaN(Number(lastChar))) {
+          // Truncated number? We can't really know, but let's assume it's okay
+        } else if (!inString && lastChar !== '"' && lastChar !== '}' && lastChar !== ']' && lastChar !== 'true' && lastChar !== 'false' && lastChar !== 'null') {
+          // Probably a truncated value that's not a string
+          // If it's an object, we might be missing a value
+          if (closer === '}') {
+             // Check if we have a key but no value
+             const lastColon = trimmedRepaired.lastIndexOf(':');
+             const lastBrace = trimmedRepaired.lastIndexOf('{');
+             if (lastColon > lastBrace) {
+                repaired += ' ""';
+             }
+          }
+        }
+        repaired += closer;
       }
     }
     return repaired;
@@ -220,7 +273,7 @@ export default function App() {
               Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
-          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan. Jika konten terlalu panjang, prioritaskan kualitas poin-poin utama daripada narasi yang berlebihan.`,
+          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan. Jika konten terlalu panjang, prioritaskan kualitas poin-poin utama daripada narasi yang berlebihan. JANGAN MENGULANG INFORMASI YANG SAMA.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.7,
@@ -280,7 +333,7 @@ export default function App() {
               },
               instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
             },
-            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian"]
+            required: ["judulMateri", "modelPembelajaran", "tp", "atpTabel", "pengertian", "subTopik", "pilihanGanda"]
           }
         }
       });
@@ -303,16 +356,26 @@ export default function App() {
             cleanJson = responseText.substring(firstBrace);
           }
         } else {
+          // If no braces found, maybe it's just the JSON string without braces (unlikely but possible)
           cleanJson = responseText.trim();
         }
         
         // Bersihkan jika masih ada pembungkus markdown (fallback)
-        if (cleanJson.startsWith('```')) {
-          cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        if (cleanJson.includes('```')) {
+          cleanJson = cleanJson.replace(/```(?:json)?/g, '').replace(/```/g, '').trim();
+        }
+        
+        // Final sanity check: if it doesn't start with {, it's definitely not JSON
+        if (!cleanJson.trim().startsWith('{')) {
+           throw new Error('AI memberikan format yang tidak valid. Silakan coba lagi.');
         }
         
         // Attempt to repair truncated JSON
-        cleanJson = repairJson(cleanJson);
+        try {
+          cleanJson = repairJson(cleanJson);
+        } catch (repairErr) {
+          console.error('Repair Error:', repairErr);
+        }
         
         try {
           const parsedResult = JSON.parse(cleanJson);
@@ -327,6 +390,21 @@ export default function App() {
         } catch (parseError) {
           console.error('JSON Parse Error:', parseError);
           console.error('Cleaned JSON that failed:', cleanJson);
+          
+          // If it's still failing, try to find the last valid JSON structure
+          // This is a last resort
+          if (cleanJson.lastIndexOf('}') > 0) {
+             try {
+                const lastValidJson = repairJson(cleanJson.substring(0, cleanJson.lastIndexOf('}') + 1));
+                const parsedResult = JSON.parse(lastValidJson);
+                if (parsedResult.judulMateri) {
+                   parsedResult.generatedSubject = subject;
+                   setResult(parsedResult);
+                   return;
+                }
+             } catch (e) {}
+          }
+          
           throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap atau terputus. Silakan coba lagi dengan topik yang lebih spesifik.');
         }
       } else {
@@ -816,12 +894,22 @@ export default function App() {
                   <AlertCircle size={16} className="shrink-0" /> 
                   <p>{error}</p>
                 </div>
-                <button 
-                  onClick={resetAllStates}
-                  className="ml-2 px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
-                >
-                  Tutup
-                </button>
+                <div className="flex gap-2">
+                  {error.includes('Gagal memproses') && (
+                    <button 
+                      onClick={(e) => { e.preventDefault(); handleGenerate(e as any); }}
+                      className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"
+                    >
+                      Coba Lagi
+                    </button>
+                  )}
+                  <button 
+                    onClick={resetAllStates}
+                    className="px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             )}
           </section>
