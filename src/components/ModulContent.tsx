@@ -264,7 +264,16 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       {!(isExportingMode || displayTarget !== 'all') && <span className="text-slate-400 bg-slate-100 p-1.5 rounded-full">{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>}
                     </button>
                     <div className={`overflow-hidden transition-all duration-300 ${isOpen || displayTarget !== 'all' ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>{formatText(sub.penjelasan)}</div>
+                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>
+                        {formatText(sub.penjelasan)}
+                        {sub.subSubTopik && sub.subSubTopik.length > 0 && (
+                          <ul className="mt-3 space-y-1.5 list-disc pl-5">
+                            {sub.subSubTopik.map((item: string, i: number) => (
+                              <li key={i} className="text-sm leading-relaxed">{item}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -463,6 +472,40 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-300' : 'text-amber-400 border-slate-600'}`}>Aspek Keterampilan</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.keterampilan?.map((k: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{k}</span></div>))}</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* K. Glosarium */}
+      {result.glosarium && shouldRender('all') && (
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8 bg-slate-50'}`}>
+          <div className="flex items-center gap-2 mb-4 text-slate-600" style={{ pageBreakAfter: 'avoid' }}>
+            <BookText size={20} />
+            <h3 className="text-lg font-bold text-slate-800">Glosarium</h3>
+          </div>
+          <div className="space-y-3">
+            {result.glosarium.map((item: any, i: number) => (
+              <div key={i} className="text-sm" style={{ pageBreakInside: 'avoid' }}>
+                <span className="font-bold text-slate-900">{item.istilah}</span>: <span className="text-slate-700">{item.arti}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* L. Daftar Pustaka */}
+      {result.daftarPustaka && shouldRender('all') && (
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
+          <div className="flex items-center gap-2 mb-4 text-slate-600" style={{ pageBreakAfter: 'avoid' }}>
+            <FileText size={20} />
+            <h3 className="text-lg font-bold text-slate-800">Daftar Pustaka</h3>
+          </div>
+          <div className="space-y-2">
+            {result.daftarPustaka.map((item: string, i: number) => (
+              <div key={i} className="text-sm text-slate-700 leading-relaxed pl-5 -indent-5" style={{ pageBreakInside: 'avoid' }}>
+                {item}
+              </div>
+            ))}
           </div>
         </div>
       )}

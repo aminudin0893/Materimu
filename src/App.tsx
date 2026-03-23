@@ -281,7 +281,9 @@ export default function App() {
               Wajib sertakan koordinat (x, y) untuk setiap kata di grid 10x10. 
               Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
           14. Instrumen Penilaian rinci.
-          15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
+          15. Glosarium (minimal 3 istilah penting).
+          16. Daftar Pustaka (minimal 3 sumber referensi yang relevan).
+          17. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten terisi LENGKAP DAN DETAIL sesuai dengan skema JSON yang diminta. Jangan ada bagian yang dikosongkan. Jika konten terlalu panjang, tetap prioritaskan kelengkapan seluruh bagian daripada narasi yang berlebihan di satu bagian saja. JANGAN PERNAH MEMBERIKAN STRING KOSONG ATAU ARRAY KOSONG UNTUK FIELD YANG DIMINTA.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
@@ -340,9 +342,11 @@ export default function App() {
                   menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" }, x: { type: "integer" }, y: { type: "integer" } } } }
                 }
               },
-              instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
+              instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } },
+              glosarium: { type: "array", items: { type: "object", properties: { istilah: { type: "string" }, arti: { type: "string" } } } },
+              daftarPustaka: { type: "array", items: { type: "string" } }
             },
-            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian"]
+            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian", "glosarium", "daftarPustaka"]
           }
         }
       });
