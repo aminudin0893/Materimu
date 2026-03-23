@@ -137,6 +137,31 @@ export default function App() {
     setError('');
   };
 
+  const repairJson = (json: string): string => {
+    let repaired = json.trim();
+    
+    // Check if it's truncated (doesn't end with })
+    if (!repaired.endsWith('}')) {
+      const stack: string[] = [];
+      for (let i = 0; i < repaired.length; i++) {
+        const char = repaired[i];
+        if (char === '{') stack.push('}');
+        else if (char === '[') stack.push(']');
+        else if (char === '}' || char === ']') {
+          if (stack.length > 0 && stack[stack.length - 1] === char) {
+            stack.pop();
+          }
+        }
+      }
+      
+      // Close open structures in reverse order
+      while (stack.length > 0) {
+        repaired += stack.pop();
+      }
+    }
+    return repaired;
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) { setError('Silakan masukkan judul materi.'); return; }
@@ -155,7 +180,7 @@ export default function App() {
     // Update request history
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
-    const currentRPM = requestHistory.filter(t => t > oneMinuteAgo).length;
+    const currentRPM = requestHistory.filter(t => t > now - 60000).length;
 
     if (currentRPM >= 15) {
       setError('Batas kuota gratis (15 RPM) tercapai. Silakan tunggu beberapa saat sebelum membuat modul lagi.');
@@ -163,7 +188,7 @@ export default function App() {
       return;
     }
 
-    const updatedHistory = [...requestHistory.filter(t => t > oneMinuteAgo), now];
+    const updatedHistory = [...requestHistory.filter(t => t > now - 60000), now];
     setRequestHistory(updatedHistory);
 
     const ismubaSubjects = ['Kemuhammadiyahan', 'Al-Islam', 'Bahasa Arab'];
@@ -195,7 +220,7 @@ export default function App() {
               Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
-          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
+          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan. Jika konten terlalu panjang, prioritaskan kualitas poin-poin utama daripada narasi yang berlebihan.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.7,
@@ -270,8 +295,13 @@ export default function App() {
         const firstBrace = responseText.indexOf('{');
         const lastBrace = responseText.lastIndexOf('}');
         
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          cleanJson = responseText.substring(firstBrace, lastBrace + 1);
+        if (firstBrace !== -1) {
+          if (lastBrace !== -1 && lastBrace > firstBrace) {
+            cleanJson = responseText.substring(firstBrace, lastBrace + 1);
+          } else {
+            // If last brace not found, maybe it's truncated
+            cleanJson = responseText.substring(firstBrace);
+          }
         } else {
           cleanJson = responseText.trim();
         }
@@ -280,6 +310,9 @@ export default function App() {
         if (cleanJson.startsWith('```')) {
           cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
         }
+        
+        // Attempt to repair truncated JSON
+        cleanJson = repairJson(cleanJson);
         
         try {
           const parsedResult = JSON.parse(cleanJson);
