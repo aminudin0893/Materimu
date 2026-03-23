@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown, Grid 
+  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown 
 } from 'lucide-react';
 
 interface ModulContentProps {
@@ -264,16 +264,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       {!(isExportingMode || displayTarget !== 'all') && <span className="text-slate-400 bg-slate-100 p-1.5 rounded-full">{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>}
                     </button>
                     <div className={`overflow-hidden transition-all duration-300 ${isOpen || displayTarget !== 'all' ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>
-                        {formatText(sub.penjelasan)}
-                        {sub.subSubTopik && sub.subSubTopik.length > 0 && (
-                          <ul className="mt-3 space-y-1.5 list-disc pl-5">
-                            {sub.subSubTopik.map((item: string, i: number) => (
-                              <li key={i} className="text-sm leading-relaxed">{item}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
+                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>{formatText(sub.penjelasan)}</div>
                     </div>
                   </div>
                 );
@@ -322,113 +313,6 @@ export const ModulContent: React.FC<ModulContentProps> = ({
         </div>
       )}
 
-      {/* I. Teka-Teki Silang */}
-      {result.tekaTekiSilang && (shouldRender('all') || shouldRender('tts')) && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
-          {displayTarget === 'tts' && <IdentitasIndividu />}
-          <div className="flex items-center gap-2 mb-6 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
-            <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
-            <h3 className="text-lg font-bold text-slate-800">Teka-Teki Silang (TTS)</h3>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Grid TTS Dinamis */}
-            <div className="flex flex-col items-center justify-start p-4 bg-slate-50 border border-slate-200 rounded-2xl overflow-auto" style={{ pageBreakInside: 'avoid' }}>
-              <div className="grid grid-cols-10 gap-0.5 bg-slate-300 border border-slate-400 p-0.5 shadow-md mb-4">
-                {(() => {
-                  const gridSize = 10;
-                  const grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
-                  
-                  // Fill grid logic
-                  result.tekaTekiSilang.mendatar?.forEach((item: any) => {
-                    const { x, y, jawaban, nomor } = item;
-                    if (typeof x === 'number' && typeof y === 'number' && x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                      if (!grid[y][x]) grid[y][x] = { nomor };
-                      for (let i = 0; i < (jawaban?.length || 0); i++) {
-                        if (x + i < gridSize) {
-                          if (!grid[y][x + i]) grid[y][x + i] = { active: true };
-                          else grid[y][x + i].active = true;
-                        }
-                      }
-                    }
-                  });
-
-                  result.tekaTekiSilang.menurun?.forEach((item: any) => {
-                    const { x, y, jawaban, nomor } = item;
-                    if (typeof x === 'number' && typeof y === 'number' && x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                      if (!grid[y][x]) grid[y][x] = { nomor };
-                      else if (nomor) grid[y][x].nomor = nomor;
-                      
-                      for (let i = 0; i < (jawaban?.length || 0); i++) {
-                        if (y + i < gridSize) {
-                          if (!grid[y + i][x]) grid[y + i][x] = { active: true };
-                          else grid[y + i][x].active = true;
-                        }
-                      }
-                    }
-                  });
-
-                  return grid.map((row, y) => 
-                    row.map((cell, x) => (
-                      <div 
-                        key={`${x}-${y}`} 
-                        className={`w-6 h-6 sm:w-8 sm:h-8 border border-slate-400 flex items-center justify-center relative ${cell?.active || cell?.nomor ? 'bg-white' : 'bg-slate-800'}`}
-                      >
-                        {cell?.nomor && (
-                          <span className="absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] font-bold leading-none text-slate-800">{cell.nomor}</span>
-                        )}
-                      </div>
-                    ))
-                  );
-                })()}
-              </div>
-              <p className="text-[10px] text-slate-500 italic text-center max-w-xs">Kotak di atas disinkronkan dengan pertanyaan. Gunakan petunjuk di bawah untuk mengisi kotak yang tersedia.</p>
-            </div>
-
-            {/* Pertanyaan TTS */}
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                  <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs">M</span> Mendatar
-                </h4>
-                <div className="space-y-3">
-                  {result.tekaTekiSilang.mendatar?.map((item: any, idx: number) => (
-                    <div key={idx} className="text-sm flex gap-3">
-                      <span className="font-bold text-emerald-600 shrink-0 w-5">{item.nomor}.</span>
-                      <div className="flex flex-col">
-                        <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {(displayTarget === 'all' || displayTarget === 'tts') && (
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs">M</span> Menurun
-                </h4>
-                <div className="space-y-3">
-                  {result.tekaTekiSilang.menurun?.map((item: any, idx: number) => (
-                    <div key={idx} className="text-sm flex gap-3">
-                      <span className="font-bold text-blue-600 shrink-0 w-5">{item.nomor}.</span>
-                      <div className="flex flex-col">
-                        <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {(displayTarget === 'all' || displayTarget === 'tts') && (
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* I. Evaluasi */}
       {result.pilihanGanda?.length > 0 && shouldRender('evaluasi') && (
         <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'border-t border-slate-300 pt-4 mt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8'}`}>
@@ -472,40 +356,6 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-300' : 'text-amber-400 border-slate-600'}`}>Aspek Keterampilan</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.keterampilan?.map((k: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{k}</span></div>))}</div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* K. Glosarium */}
-      {result.glosarium && shouldRender('all') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8 bg-slate-50'}`}>
-          <div className="flex items-center gap-2 mb-4 text-slate-600" style={{ pageBreakAfter: 'avoid' }}>
-            <BookText size={20} />
-            <h3 className="text-lg font-bold text-slate-800">Glosarium</h3>
-          </div>
-          <div className="space-y-3">
-            {result.glosarium.map((item: any, i: number) => (
-              <div key={i} className="text-sm" style={{ pageBreakInside: 'avoid' }}>
-                <span className="font-bold text-slate-900">{item.istilah}</span>: <span className="text-slate-700">{item.arti}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* L. Daftar Pustaka */}
-      {result.daftarPustaka && shouldRender('all') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
-          <div className="flex items-center gap-2 mb-4 text-slate-600" style={{ pageBreakAfter: 'avoid' }}>
-            <FileText size={20} />
-            <h3 className="text-lg font-bold text-slate-800">Daftar Pustaka</h3>
-          </div>
-          <div className="space-y-2">
-            {result.daftarPustaka.map((item: string, i: number) => (
-              <div key={i} className="text-sm text-slate-700 leading-relaxed pl-5 -indent-5" style={{ pageBreakInside: 'avoid' }}>
-                {item}
-              </div>
-            ))}
           </div>
         </div>
       )}

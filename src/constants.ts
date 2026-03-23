@@ -65,30 +65,15 @@ export const initialData = {
   subTopik: [
     {
       judulSub: "Syarat Wajib dan Syarat Sah Puasa",
-      penjelasan: "Syarat Wajib adalah kondisi yang membuat seseorang diwajibkan berpuasa. Syarat ini meliputi: beragama Islam, Baligh (sudah dewasa), Berakal sehat, Mampu (tidak sedang sakit parah atau tua renta), dan Mukim (tidak sedang dalam perjalanan jauh/musafir).\n\nSementara itu, Syarat Sah adalah kondisi yang membuat puasa seseorang diterima. Syaratnya meliputi: beragama Islam, Tamyiz (mampu membedakan yang baik dan buruk), Suci dari haid dan nifas (khusus bagi perempuan), serta dikerjakan pada hari yang diperbolehkan (bukan pada hari Tasyrik, Idul Fitri, atau Idul Adha).",
-      subSubTopik: [
-        "Kriteria Baligh bagi laki-laki dan perempuan",
-        "Batasan jarak musafir yang diperbolehkan tidak berpuasa",
-        "Jenis-jenis penyakit yang menghalangi kewajiban puasa"
-      ]
+      penjelasan: "Syarat Wajib adalah kondisi yang membuat seseorang diwajibkan berpuasa. Syarat ini meliputi: beragama Islam, Baligh (sudah dewasa), Berakal sehat, Mampu (tidak sedang sakit parah atau tua renta), dan Mukim (tidak sedang dalam perjalanan jauh/musafir).\n\nSementara itu, Syarat Sah adalah kondisi yang membuat puasa seseorang diterima. Syaratnya meliputi: beragama Islam, Tamyiz (mampu membedakan yang baik dan buruk), Suci dari haid dan nifas (khusus bagi perempuan), serta dikerjakan pada hari yang diperbolehkan (bukan pada hari Tasyrik, Idul Fitri, atau Idul Adha)."
     },
     {
       judulSub: "Rukun Puasa",
-      penjelasan: "Terdapat dua rukun utama dalam ibadah puasa yang tidak boleh ditinggalkan.\n\nPertama, Niat. Yaitu menyengaja di dalam hati untuk berpuasa Ramadhan. Niat puasa wajib ini harus dilakukan pada malam hari sebelum terbit fajar.\n\nKedua, Imsak. Yaitu tindakan secara sadar untuk menahan diri dari segala sesuatu yang membatalkan puasa (seperti makan, minum, dan bersetubuh) mulai dari terbit fajar hingga terbenam matahari.",
-      subSubTopik: [
-        "Waktu pelaksanaan niat yang sah",
-        "Lafadz niat puasa Ramadhan",
-        "Makna filosofis menahan diri (Imsak)"
-      ]
+      penjelasan: "Terdapat dua rukun utama dalam ibadah puasa yang tidak boleh ditinggalkan.\n\nPertama, Niat. Yaitu menyengaja di dalam hati untuk berpuasa Ramadhan. Niat puasa wajib ini harus dilakukan pada malam hari sebelum terbit fajar.\n\nKedua, Imsak. Yaitu tindakan secara sadar untuk menahan diri dari segala sesuatu yang membatalkan puasa (seperti makan, minum, dan bersetubuh) mulai dari terbit fajar hingga terbenam matahari."
     },
     {
       judulSub: "Hal-hal yang Membatalkan Puasa",
-      penjelasan: "Beberapa hal yang secara otomatis membatalkan puasa seseorang antara lain: makan dan minum dengan sengaja, muntah yang disengaja, serta berhubungan suami istri di siang hari pada bulan Ramadhan.\n\nSelain itu, keluarnya darah haid atau nifas bagi perempuan, gila (hilangnya akal sehat secara tiba-tiba), dan murtad (keluar dari agama Islam) juga termasuk hal-hal yang membatalkan puasa.",
-      subSubTopik: [
-        "Perbedaan lupa makan dan sengaja makan",
-        "Hukum menyikat gigi dan berkumur saat puasa",
-        "Konsekuensi (Kaffarat) bagi yang membatalkan puasa dengan sengaja"
-      ]
+      penjelasan: "Beberapa hal yang secara otomatis membatalkan puasa seseorang antara lain: makan dan minum dengan sengaja, muntah yang disengaja, serta berhubungan suami istri di siang hari pada bulan Ramadhan.\n\nSelain itu, keluarnya darah haid atau nifas bagi perempuan, gila (hilangnya akal sehat secara tiba-tiba), dan murtad (keluar dari agama Islam) juga termasuk hal-hal yang membatalkan puasa."
     }
   ],
   lkpd: {
@@ -168,15 +153,5 @@ export const initialData = {
       "Penilaian Kinerja: Mengukur kemampuan siswa dalam mempresentasikan dan mengomunikasikan hasil diskusi LKPD di depan kelas.",
       "Penilaian Produk: Mengukur tingkat kerapian, kejelasan pesan, dan kreativitas siswa dalam pembuatan produk berupa Poster/Mading Mini."
     ]
-  },
-  glosarium: [
-    { istilah: "Shaum", arti: "Menahan diri dari segala sesuatu yang membatalkan puasa." },
-    { istilah: "Imsak", arti: "Waktu dimulainya menahan diri dari makan dan minum." },
-    { istilah: "Fidyah", arti: "Denda yang dibayarkan oleh orang yang tidak mampu berpuasa." }
-  ],
-  daftarPustaka: [
-    "Kementerian Pendidikan dan Kebudayaan. (2021). Pendidikan Agama Islam dan Budi Pekerti untuk SMP Kelas VII. Jakarta: Kemdikbudristek.",
-    "Sabiq, Sayyid. (2010). Fikih Sunnah. Jakarta: Pena Pundi Aksara.",
-    "Majelis Pendidikan Dasar dan Menengah Pimpinan Pusat Muhammadiyah. (2022). Al-Islam untuk SMP/MTs Kelas VII. Jakarta: Gramasurya."
-  ]
+  }
 };

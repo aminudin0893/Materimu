@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize, Minimize
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
 import { ModulContent } from './components/ModulContent';
-import { MindMap } from './components/MindMap';
 
 export default function App() {
   const [subject, setSubject] = useState('Pendidikan Agama Islam');
@@ -24,7 +23,6 @@ export default function App() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isJpgLoading, setIsJpgLoading] = useState(false);
   const [isExportingMode, setIsExportingMode] = useState(false);
-  const [isFocusMode, setIsFocusMode] = useState(false);
   
   // State View Mode dan Export Target
   const [viewMode, setViewMode] = useState('all'); 
@@ -137,98 +135,11 @@ export default function App() {
     setError('');
   };
 
-  const repairJson = (json: string): string => {
-    let repaired = json.trim();
-    
-    // Check if it's truncated (doesn't end with })
-    if (!repaired.endsWith('}')) {
-      const stack: string[] = [];
-      let inString = false;
-      let escaped = false;
-      
-      for (let i = 0; i < repaired.length; i++) {
-        const char = repaired[i];
-        
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        
-        if (char === '\\') {
-          escaped = true;
-          continue;
-        }
-        
-        if (char === '"') {
-          inString = !inString;
-          continue;
-        }
-        
-        if (!inString) {
-          if (char === '{') stack.push('}');
-          else if (char === '[') stack.push(']');
-          else if (char === '}' || char === ']') {
-            if (stack.length > 0 && stack[stack.length - 1] === char) {
-              stack.pop();
-            }
-          }
-        }
-      }
-      
-      // If we're inside a string, close it
-      if (inString) {
-        repaired += '"';
-      }
-      
-      // Close open structures in reverse order
-      while (stack.length > 0) {
-        const closer = stack.pop();
-        // If the last character is a colon or comma, it's a truncated key-value pair or list item
-        // We might need to add a dummy value
-        let trimmedRepaired = repaired.trim();
-        const lastChar = trimmedRepaired.slice(-1);
-        
-        if (lastChar === ':') {
-          repaired += ' ""';
-        } else if (lastChar === ',') {
-          // Remove trailing comma if it's at the end of an object/array
-          repaired = trimmedRepaired.slice(0, -1);
-        } else if (lastChar === '{' || lastChar === '[') {
-          // Empty object or array, just close it
-        } else if (!inString && lastChar !== '"' && lastChar !== '}' && lastChar !== ']' && !isNaN(Number(lastChar))) {
-          // Truncated number? We can't really know, but let's assume it's okay
-        } else if (!inString && lastChar !== '"' && lastChar !== '}' && lastChar !== ']' && lastChar !== 'true' && lastChar !== 'false' && lastChar !== 'null') {
-          // Probably a truncated value that's not a string
-          // If it's an object, we might be missing a value
-          if (closer === '}') {
-             // Check if we have a key but no value
-             const lastColon = trimmedRepaired.lastIndexOf(':');
-             const lastBrace = trimmedRepaired.lastIndexOf('{');
-             if (lastColon > lastBrace) {
-                repaired += ' ""';
-             }
-          }
-        } else if (inString) {
-           // We already closed the string, but check if it was a key
-           const lastColon = trimmedRepaired.lastIndexOf(':');
-           const lastBrace = trimmedRepaired.lastIndexOf('{');
-           if (lastColon < lastBrace || lastColon === -1) {
-              // It was likely a key, add a colon and value
-              repaired += ': ""';
-           }
-        }
-        repaired += closer;
-      }
-    }
-    return repaired;
-  };
-
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) { setError('Silakan masukkan judul materi.'); return; }
 
     setIsLoading(true); setError(''); setCopied(false); 
-    setResult(null); // Clear previous result to show loading state clearly
     setExpandedSubtopics([]); setExpandAll(false); setShowPdfMenu(false); setShowJpgMenu(false); setViewMode('all');
 
     const apiKey = customApiKey || process.env.GEMINI_API_KEY!;
@@ -242,7 +153,7 @@ export default function App() {
     // Update request history
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
-    const currentRPM = requestHistory.filter(t => t > now - 60000).length;
+    const currentRPM = requestHistory.filter(t => t > oneMinuteAgo).length;
 
     if (currentRPM >= 15) {
       setError('Batas kuota gratis (15 RPM) tercapai. Silakan tunggu beberapa saat sebelum membuat modul lagi.');
@@ -250,7 +161,7 @@ export default function App() {
       return;
     }
 
-    const updatedHistory = [...requestHistory.filter(t => t > now - 60000), now];
+    const updatedHistory = [...requestHistory.filter(t => t > oneMinuteAgo), now];
     setRequestHistory(updatedHistory);
 
     const ismubaSubjects = ['Kemuhammadiyahan', 'Al-Islam', 'Bahasa Arab'];
@@ -277,14 +188,9 @@ export default function App() {
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
           12. ${numQuestions} Soal PG + Kunci. 
-          13. Teka-Teki Silang (TTS) minimal 5 kata (mendatar & menurun) yang relevan dengan materi. 
-              Wajib sertakan koordinat (x, y) untuk setiap kata di grid 10x10. 
-              Pastikan kata-kata tersebut benar-benar berpotongan (sinkron) secara logis di grid tersebut.
-          14. Instrumen Penilaian rinci.
-          15. Glosarium (minimal 3 istilah penting).
-          16. Daftar Pustaka (minimal 3 sumber referensi yang relevan).
-          17. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
-          PENTING: Pastikan seluruh konten terisi LENGKAP DAN DETAIL sesuai dengan skema JSON yang diminta. Jangan ada bagian yang dikosongkan. Jika konten terlalu panjang, tetap prioritaskan kelengkapan seluruh bagian daripada narasi yang berlebihan di satu bagian saja. JANGAN PERNAH MEMBERIKAN STRING KOSONG ATAU ARRAY KOSONG UNTUK FIELD YANG DIMINTA.`,
+          13. Instrumen Penilaian rinci.
+          14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
+          PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
           temperature: 0.7,
@@ -320,33 +226,14 @@ export default function App() {
               },
               pengertian: { type: "string" },
               dalil: { type: "array", items: { type: "object", properties: { sumber: { type: "string" }, teksArab: { type: "string" }, terjemahan: { type: "string" } } } },
-              subTopik: { 
-                type: "array", 
-                items: { 
-                  type: "object", 
-                  properties: { 
-                    judulSub: { type: "string" }, 
-                    penjelasan: { type: "string" },
-                    subSubTopik: { type: "array", items: { type: "string" }, description: "Daftar poin-poin detail atau sub-sub materi dari sub-topik ini." }
-                  } 
-                } 
-              },
+              subTopik: { type: "array", items: { type: "object", properties: { judulSub: { type: "string" }, penjelasan: { type: "string" } } } },
               lkpd: { type: "object", properties: { judul: { type: "string" }, tujuan: { type: "string" }, langkahKerja: { type: "array", items: { type: "string" } } } },
               tugasIndividu: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               tugasKelompok: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               pilihanGanda: { type: "array", items: { type: "object", properties: { soal: { type: "string" }, opsiA: { type: "string" }, opsiB: { type: "string" }, opsiC: { type: "string" }, opsiD: { type: "string" }, opsiE: { type: "string" }, kunci: { type: "string" } } } },
-              tekaTekiSilang: {
-                type: "object",
-                properties: {
-                  mendatar: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" }, x: { type: "integer" }, y: { type: "integer" } } } },
-                  menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" }, x: { type: "integer" }, y: { type: "integer" } } } }
-                }
-              },
-              instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } },
-              glosarium: { type: "array", items: { type: "object", properties: { istilah: { type: "string" }, arti: { type: "string" } } } },
-              daftarPustaka: { type: "array", items: { type: "string" } }
+              instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
             },
-            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian", "glosarium", "daftarPustaka"]
+            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "instrumenPenilaian"]
           }
         }
       });
@@ -361,54 +248,23 @@ export default function App() {
         const firstBrace = responseText.indexOf('{');
         const lastBrace = responseText.lastIndexOf('}');
         
-        if (firstBrace !== -1) {
-          if (lastBrace !== -1 && lastBrace > firstBrace) {
-            cleanJson = responseText.substring(firstBrace, lastBrace + 1);
-          } else {
-            // If last brace not found, maybe it's truncated
-            cleanJson = responseText.substring(firstBrace);
-          }
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleanJson = responseText.substring(firstBrace, lastBrace + 1);
         } else {
-          // If no braces found, maybe it's just the JSON string without braces (unlikely but possible)
           cleanJson = responseText.trim();
         }
         
         // Bersihkan jika masih ada pembungkus markdown (fallback)
-        if (cleanJson.includes('```')) {
-          cleanJson = cleanJson.replace(/```(?:json)?/g, '').replace(/```/g, '').trim();
-        }
-        
-        // Final sanity check: if it doesn't start with {, it's definitely not JSON
-        if (!cleanJson.trim().startsWith('{')) {
-           throw new Error('AI memberikan format yang tidak valid. Silakan coba lagi.');
-        }
-        
-        if (cleanJson.trim() === '{}') {
-           throw new Error('AI memberikan respon kosong. Silakan coba lagi.');
-        }
-        
-        // Attempt to repair truncated JSON
-        try {
-          cleanJson = repairJson(cleanJson);
-        } catch (repairErr) {
-          console.error('Repair Error:', repairErr);
+        if (cleanJson.startsWith('```')) {
+          cleanJson = cleanJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
         }
         
         try {
           const parsedResult = JSON.parse(cleanJson);
-          console.log("Parsed Result:", parsedResult);
           
-          // Validasi minimal field (harus ada field utama dan tidak kosong)
-          const requiredFields = ['judulMateri', 'tp', 'atpTabel', 'pengertian', 'subTopik', 'pilihanGanda'];
-          const isEmpty = (val: any) => !val || (Array.isArray(val) && val.length === 0) || (typeof val === 'object' && Object.keys(val).length === 0);
-          const missingOrEmptyFields = requiredFields.filter(field => isEmpty(parsedResult[field]));
-          
-          if (missingOrEmptyFields.length > 0) {
-            console.warn('Missing or empty fields in AI response:', missingOrEmptyFields);
-            // If too many fields are missing, throw error to trigger last resort or retry
-            if (missingOrEmptyFields.includes('judulMateri') || missingOrEmptyFields.includes('tp') || missingOrEmptyFields.length > 2 || Object.keys(parsedResult).length < 5) {
-              throw new Error('Data yang dihasilkan tidak lengkap.');
-            }
+          // Validasi minimal field
+          if (!parsedResult.judulMateri || !parsedResult.tp) {
+            throw new Error('Data yang dihasilkan tidak lengkap.');
           }
 
           parsedResult.generatedSubject = subject; 
@@ -416,23 +272,6 @@ export default function App() {
         } catch (parseError) {
           console.error('JSON Parse Error:', parseError);
           console.error('Cleaned JSON that failed:', cleanJson);
-          
-          // If it's still failing, try to find the last valid JSON structure
-          // This is a last resort
-          if (cleanJson.lastIndexOf('}') > 0) {
-             try {
-                const lastValidJson = repairJson(cleanJson.substring(0, cleanJson.lastIndexOf('}') + 1));
-                const parsedResult = JSON.parse(lastValidJson);
-                console.log("Last Resort Parsed Result:", parsedResult);
-                const isEmpty = (val: any) => !val || (Array.isArray(val) && val.length === 0) || (typeof val === 'object' && Object.keys(val).length === 0);
-                if (parsedResult.judulMateri && !isEmpty(parsedResult.tp) && !isEmpty(parsedResult.atpTabel)) {
-                   parsedResult.generatedSubject = subject;
-                   setResult(parsedResult);
-                   return;
-                }
-             } catch (e) {}
-          }
-          
           throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap atau terputus. Silakan coba lagi dengan topik yang lebih spesifik.');
         }
       } else {
@@ -784,7 +623,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen ${isFocusMode ? 'bg-white' : 'bg-slate-50'} text-slate-800 font-sans p-4 md:p-8 pb-20 relative`}>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 pb-20 relative">
       {/* Refresh Button */}
       {!isExportingMode && (
         <button 
@@ -796,9 +635,9 @@ export default function App() {
         </button>
       )}
 
-      <div className={`max-w-4xl mx-auto space-y-6 ${isFocusMode ? 'pt-0' : ''}`}>
+      <div className="max-w-4xl mx-auto space-y-6">
         
-        {!isExportingMode && !isFocusMode && (
+        {!isExportingMode && (
           <header className="text-center pt-6 pb-2">
             <div className="inline-flex items-center justify-center p-3 bg-emerald-600 text-white rounded-xl mb-4 shadow-sm">
               <BookOpen size={28} />
@@ -809,7 +648,7 @@ export default function App() {
           </header>
         )}
 
-        {!isExportingMode && !isFocusMode && (
+        {!isExportingMode && (
           <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
             <form onSubmit={handleGenerate} className="space-y-4">
               <div className="flex flex-col md:flex-row gap-3">
@@ -922,39 +761,27 @@ export default function App() {
                   <AlertCircle size={16} className="shrink-0" /> 
                   <p>{error}</p>
                 </div>
-                <div className="flex gap-2">
-                  {error.includes('Gagal memproses') && (
-                    <button 
-                      onClick={(e) => { e.preventDefault(); handleGenerate(e as any); }}
-                      className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"
-                    >
-                      Coba Lagi
-                    </button>
-                  )}
-                  <button 
-                    onClick={resetAllStates}
-                    className="px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
-                  >
-                    Tutup
-                  </button>
-                </div>
+                <button 
+                  onClick={resetAllStates}
+                  className="ml-2 px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
+                >
+                  Tutup
+                </button>
               </div>
             )}
           </section>
         )}
 
-        {result && (
+        {result && !isExportingMode && (
           <section className="space-y-4">
-            <div className={`flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner ${isFocusMode ? 'fixed top-4 right-4 z-50 bg-white/80 backdrop-blur-md shadow-lg p-2 rounded-2xl border border-slate-200 w-auto' : ''}`}>
-              {!isFocusMode && [
+            <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
+              {[
                 { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
                 { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
                 { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
                 { id: 'penugasan_kelompok', label: 'Tugas Kelompok', icon: <Users size={16} /> },
-                { id: 'tts', label: 'Teka-Teki Silang', icon: <Grid size={16} /> },
                 { id: 'evaluasi_tanpa_kunci', label: 'Soal (Siswa)', icon: <ListChecks size={16} /> },
                 { id: 'evaluasi_dengan_kunci', label: 'Soal (Guru)', icon: <Check size={16} /> },
-                { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -964,17 +791,9 @@ export default function App() {
                   {tab.icon} {tab.label}
                 </button>
               ))}
-              <button
-                onClick={() => setIsFocusMode(!isFocusMode)}
-                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isFocusMode ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-700 hover:bg-slate-400'}`}
-                title={isFocusMode ? "Keluar Mode Fokus" : "Mode Fokus"}
-              >
-                {isFocusMode ? <Minimize size={16} /> : <Maximize size={16} />}
-                {isFocusMode ? "" : "Fokus"}
-              </button>
             </div>
 
-            <div className={`flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3 ${isFocusMode ? 'hidden' : ''}`}>
+            <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
               <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
                 <button 
@@ -1097,24 +916,20 @@ export default function App() {
 
         {result && (
           <div id="modul-ajar-content-container">
-            {viewMode === 'mindmap' ? (
-              <MindMap data={result} />
-            ) : (
-              <ModulContent 
-                result={result}
-                subject={subject}
-                kelas={kelas}
-                semester={semester}
-                tahunAjaran={tahunAjaran}
-                namaPenyusun={namaPenyusun}
-                alokasiWaktu={alokasiWaktu}
-                isExportingMode={isExportingMode}
-                displayTarget={isExportingMode ? exportTarget : viewMode}
-                expandedSubtopics={expandedSubtopics}
-                expandAll={expandAll}
-                toggleAccordion={toggleAccordion}
-              />
-            )}
+            <ModulContent 
+              result={result}
+              subject={subject}
+              kelas={kelas}
+              semester={semester}
+              tahunAjaran={tahunAjaran}
+              namaPenyusun={namaPenyusun}
+              alokasiWaktu={alokasiWaktu}
+              isExportingMode={isExportingMode}
+              displayTarget={isExportingMode ? exportTarget : viewMode}
+              expandedSubtopics={expandedSubtopics}
+              expandAll={expandAll}
+              toggleAccordion={toggleAccordion}
+            />
           </div>
         )}
 
