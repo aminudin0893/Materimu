@@ -38,6 +38,8 @@ export default function App() {
   
   const [expandedSubtopics, setExpandedSubtopics] = useState<number[]>([]); 
   const [expandAll, setExpandAll] = useState(false);
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [requestHistory, setRequestHistory] = useState<number[]>([]);
   const [customApiKey, setCustomApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
 
@@ -59,6 +61,7 @@ export default function App() {
         if (m.tahunAjaran) setTahunAjaran(m.tahunAjaran);
         if (m.alokasiWaktu) setAlokasiWaktu(m.alokasiWaktu);
         if (m.subject) setSubject(m.subject);
+        if (m.numQuestions) setNumQuestions(m.numQuestions);
       } catch (e) {}
     }
 
@@ -83,9 +86,9 @@ export default function App() {
   }, [customApiKey]);
 
   useEffect(() => {
-    const metadata = { namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject };
+    const metadata = { namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions };
     localStorage.setItem('modul_metadata', JSON.stringify(metadata));
-  }, [namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject]);
+  }, [namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions]);
 
   useEffect(() => {
     if (result && result !== initialData) {
@@ -108,6 +111,20 @@ export default function App() {
       document.removeEventListener("mousedown", handleClickOutside);
     }
   }, []);
+
+  useEffect(() => {
+    if (requestHistory.length > 0) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const oneMinuteAgo = now - 60000;
+        const filtered = requestHistory.filter(t => t > oneMinuteAgo);
+        if (filtered.length !== requestHistory.length) {
+          setRequestHistory(filtered);
+        }
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [requestHistory]);
 
   const resetAllStates = () => {
     setIsLoading(false);
@@ -133,6 +150,20 @@ export default function App() {
     }
     const ai = new GoogleGenAI({ apiKey });
 
+    // Update request history
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000;
+    const currentRPM = requestHistory.filter(t => t > oneMinuteAgo).length;
+
+    if (currentRPM >= 15) {
+      setError('Batas kuota gratis (15 RPM) tercapai. Silakan tunggu beberapa saat sebelum membuat modul lagi.');
+      setIsLoading(false);
+      return;
+    }
+
+    const updatedHistory = [...requestHistory.filter(t => t > oneMinuteAgo), now];
+    setRequestHistory(updatedHistory);
+
     const ismubaSubjects = ['Kemuhammadiyahan', 'Al-Islam', 'Bahasa Arab'];
     const instruksiPendekatan = ismubaSubjects.includes(subject)
       ? "3. Wajib ada penjabaran 'Pendekatan Kurikulum ISMUBA' (Integrasi Al-Islam, Kemuhammadiyahan, dan Bahasa Arab) pada bagian pendekatanKhusus."
@@ -156,7 +187,7 @@ export default function App() {
           9. Sub-topik min 3. 
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
-          12. 5 Soal PG + Kunci. 
+          12. ${numQuestions} Soal PG + Kunci. 
           13. Instrumen Penilaian rinci.
           14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
@@ -332,25 +363,33 @@ export default function App() {
         let dynamicScale = 1.2; // Start with a lower scale for better stability
         if (elementHeight > 5000) dynamicScale = 1.0;
         if (elementHeight > 10000) dynamicScale = 0.8;
+        if (elementHeight > 15000) dynamicScale = 0.6;
 
         const opt = {
           margin: [10, 10, 10, 10], 
           filename: fileName,
-          image: { type: 'jpeg', quality: 0.90 }, // Slightly lower quality for better memory handling
+          image: { type: 'jpeg', quality: 0.90 },
           html2canvas: { 
             scale: dynamicScale, 
             useCORS: true, 
-            letterRendering: true, 
-            scrollY: 0,
             logging: false,
             backgroundColor: '#ffffff',
-            allowTaint: true
+            removeContainer: true,
+            onclone: (clonedDoc: Document) => {
+              const clonedElement = clonedDoc.getElementById('modul-ajar-content');
+              if (clonedElement) {
+                // Remove any elements that shouldn't be in the PDF
+                const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
+                toRemove.forEach(el => el.remove());
+                clonedElement.style.padding = '20px';
+              }
+            }
           },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-          pagebreak: { mode: ['css', 'legacy'] } 
+          pagebreak: { mode: ['css', 'legacy'], before: '.page-break' } 
         };
 
-        // Execute html2pdf with a more robust chain
+        // Execute html2pdf
         html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf: any) => {
           pdf.save();
           clearTimeout(safetyTimeout);
@@ -360,7 +399,8 @@ export default function App() {
           setExportTarget('all');
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
-        }).catch((err: any) => {
+        })
+        .catch((err: any) => {
           clearTimeout(safetyTimeout);
           console.error("Error creating PDF", err);
           setError("Gagal membuat PDF. Dokumen mungkin terlalu besar. Silakan gunakan fitur 'Cetak Langsung (Print)' sebagai alternatif.");
@@ -443,7 +483,8 @@ export default function App() {
         const elementHeight = element.scrollHeight;
         let dynamicScale = 1.2;
         if (elementHeight > 5000) dynamicScale = 1.0;
-        if (elementHeight > 10000) dynamicScale = 0.8;
+        if (elementHeight > 10000) dynamicScale = 0.7; // Lower scale for very long documents
+        if (elementHeight > 15000) dynamicScale = 0.5; // Extreme reduction for stability
 
         // Use html2canvas from the window object (loaded via html2pdf bundle)
         const html2canvasLib = (window as any).html2canvas;
@@ -454,20 +495,38 @@ export default function App() {
           windowWidth: 900,
           logging: false,
           backgroundColor: '#ffffff',
-          scrollY: 0
+          scrollY: 0,
+          onclone: (clonedDoc: Document) => {
+            const clonedElement = clonedDoc.getElementById('modul-ajar-content');
+            if (clonedElement) {
+              const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
+              toRemove.forEach(el => el.remove());
+            }
+          }
         }).then((canvas: HTMLCanvasElement) => {
           clearTimeout(safetyTimeout);
           
-          const imgData = canvas.toDataURL('image/jpeg', 0.9);
-          const link = document.createElement('a');
-          link.download = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.jpg`;
-          link.href = imgData;
-          link.click();
+          // Use toBlob for better stability with large images
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.download = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.jpg`;
+              link.href = url;
+              link.click();
+              
+              // Cleanup URL object
+              setTimeout(() => URL.revokeObjectURL(url), 100);
+            } else {
+              setError("Gagal membuat data gambar. Dokumen mungkin terlalu besar.");
+            }
+            
+            setIsJpgLoading(false);
+            setExpandAll(false);
+            setIsExportingMode(false);
+            setExportTarget('all');
+          }, 'image/jpeg', 0.9);
           
-          setIsJpgLoading(false);
-          setExpandAll(false);
-          setIsExportingMode(false);
-          setExportTarget('all');
         }).catch((err: any) => {
           clearTimeout(safetyTimeout);
           console.error("JPG Export Error:", err);
@@ -672,11 +731,21 @@ export default function App() {
                     <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Fase / Kelas</label><select value={kelas} onChange={e=>setKelas(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Fase A - Kelas I/II">Fase A - Kelas I/II</option><option value="Fase B - Kelas III/IV">Fase B - Kelas III/IV</option><option value="Fase C - Kelas V/VI">Fase C - Kelas V/VI</option><option value="Fase D - Kelas VII">Fase D - Kelas VII</option><option value="Fase D - Kelas VIII">Fase D - Kelas VIII</option><option value="Fase D - Kelas IX">Fase D - Kelas IX</option><option value="Fase E - Kelas X">Fase E - Kelas X</option><option value="Fase F - Kelas XI/XII">Fase F - Kelas XI/XII</option></select></div>
                     <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Semester</label><select value={semester} onChange={e=>setSemester(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
                     <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tahun Ajaran</label><input type="text" value={tahunAjaran} onChange={e=>setTahunAjaran(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
+                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Jumlah Soal Evaluasi</label><input type="number" min="1" max="50" value={numQuestions} onChange={e=>setNumQuestions(parseInt(e.target.value) || 1)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
                     <div className="md:col-span-2"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Alokasi Waktu</label><input type="text" value={alokasiWaktu} onChange={e=>setAlokasiWaktu(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
                   </div>
                 )}
 
-              <div className="pt-2 border-t border-slate-100 flex justify-end">
+              <div className="pt-2 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
+                    <div className={`w-2 h-2 rounded-full ${requestHistory.filter(t => t > Date.now() - 60000).length >= 12 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                      Estimasi Kuota: {requestHistory.filter(t => t > Date.now() - 60000).length} / 15 RPM (Free Tier)
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-slate-400 ml-1 italic">Reset otomatis setiap 60 detik per permintaan.</p>
+                </div>
                 <button
                   type="submit"
                   disabled={isLoading || isPdfLoading || isJpgLoading || !topic.trim()}
