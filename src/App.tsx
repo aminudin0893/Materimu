@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
 import { ModulContent } from './components/ModulContent';
+import { MindMap } from './components/MindMap';
 
 export default function App() {
   const [subject, setSubject] = useState('Pendidikan Agama Islam');
@@ -188,8 +189,9 @@ export default function App() {
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
           12. ${numQuestions} Soal PG + Kunci. 
-          13. Instrumen Penilaian rinci.
-          14. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
+          13. Teka-Teki Silang (TTS) minimal 5 kata (mendatar & menurun) yang relevan dengan materi.
+          14. Instrumen Penilaian rinci.
+          15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
@@ -231,9 +233,16 @@ export default function App() {
               tugasIndividu: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               tugasKelompok: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               pilihanGanda: { type: "array", items: { type: "object", properties: { soal: { type: "string" }, opsiA: { type: "string" }, opsiB: { type: "string" }, opsiC: { type: "string" }, opsiD: { type: "string" }, opsiE: { type: "string" }, kunci: { type: "string" } } } },
+              tekaTekiSilang: {
+                type: "object",
+                properties: {
+                  mendatar: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } },
+                  menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } }
+                }
+              },
               instrumenPenilaian: { type: "object", properties: { sikap: { type: "array", items: { type: "string" } }, pengetahuan: { type: "string" }, keterampilan: { type: "array", items: { type: "string" } } } }
             },
-            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "instrumenPenilaian"]
+            required: ["judulMateri", "modelPembelajaran", "pendekatanKhusus", "tp", "atpTabel", "pertanyaanPemantik", "pengertian", "dalil", "subTopik", "lkpd", "tugasIndividu", "tugasKelompok", "pilihanGanda", "tekaTekiSilang", "instrumenPenilaian"]
           }
         }
       });
@@ -780,8 +789,10 @@ export default function App() {
                 { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
                 { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
                 { id: 'penugasan_kelompok', label: 'Tugas Kelompok', icon: <Users size={16} /> },
+                { id: 'tts', label: 'Teka-Teki Silang', icon: <Grid size={16} /> },
                 { id: 'evaluasi_tanpa_kunci', label: 'Soal (Siswa)', icon: <ListChecks size={16} /> },
                 { id: 'evaluasi_dengan_kunci', label: 'Soal (Guru)', icon: <Check size={16} /> },
+                { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -916,20 +927,24 @@ export default function App() {
 
         {result && (
           <div id="modul-ajar-content-container">
-            <ModulContent 
-              result={result}
-              subject={subject}
-              kelas={kelas}
-              semester={semester}
-              tahunAjaran={tahunAjaran}
-              namaPenyusun={namaPenyusun}
-              alokasiWaktu={alokasiWaktu}
-              isExportingMode={isExportingMode}
-              displayTarget={isExportingMode ? exportTarget : viewMode}
-              expandedSubtopics={expandedSubtopics}
-              expandAll={expandAll}
-              toggleAccordion={toggleAccordion}
-            />
+            {viewMode === 'mindmap' ? (
+              <MindMap data={result} />
+            ) : (
+              <ModulContent 
+                result={result}
+                subject={subject}
+                kelas={kelas}
+                semester={semester}
+                tahunAjaran={tahunAjaran}
+                namaPenyusun={namaPenyusun}
+                alokasiWaktu={alokasiWaktu}
+                isExportingMode={isExportingMode}
+                displayTarget={isExportingMode ? exportTarget : viewMode}
+                expandedSubtopics={expandedSubtopics}
+                expandAll={expandAll}
+                toggleAccordion={toggleAccordion}
+              />
+            )}
           </div>
         )}
 
