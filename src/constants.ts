@@ -95,6 +95,17 @@ export const initialData = {
     judul: "Mading Mini: Poster Hikmah Puasa",
     instruksi: "Setiap kelompok ditugaskan untuk membuat 1 buah poster kreatif berukuran A3. Poster tersebut harus berisi ajakan berpuasa beserta rincian hikmah-hikmah pelaksanaannya.\n\nPoster dapat dibuat secara manual menggunakan kertas gambar dan pewarna, atau didesain menggunakan aplikasi digital (seperti Canva) lalu dicetak. Hasil karya terbaik akan ditempel di majalah dinding sekolah."
   },
+  tekaTekiSilang: {
+    mendatar: [
+      { nomor: 1, pertanyaan: "Bulan diwajibkannya puasa bagi umat Islam.", jawaban: "RAMADHAN" },
+      { nomor: 3, pertanyaan: "Menahan diri dari makan dan minum.", jawaban: "PUASA" },
+      { nomor: 5, pertanyaan: "Makan yang dilakukan sebelum terbit fajar.", jawaban: "SAHUR" }
+    ],
+    menurun: [
+      { nomor: 2, pertanyaan: "Waktu berbuka puasa.", jawaban: "MAGHRIB" },
+      { nomor: 4, pertanyaan: "Tujuan utama puasa agar menjadi orang yang...", jawaban: "TAKWA" }
+    ]
+  },
   pilihanGanda: [
     {
       soal: "Perintah kewajiban melaksanakan puasa Ramadhan bagi umat Islam terdapat dalam Al-Quran surah dan ayat...",

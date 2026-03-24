@@ -319,7 +319,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           {displayTarget === 'tts' && <IdentitasIndividu />}
           <div className="flex items-center gap-2 mb-6 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
             <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
-            <h3 className="text-lg font-bold text-slate-800">Teka-Teki Silang (TTS)</h3>
+            <h3 className="text-lg font-bold text-slate-800">I. Teka-Teki Silang (TTS)</h3>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
@@ -347,7 +347,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       <span className="font-bold text-emerald-600 shrink-0 w-5">{item.nomor}.</span>
                       <div className="flex flex-col">
                         <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {(displayTarget === 'all' || displayTarget === 'tts') && (
+                        {displayTarget === 'tts' && (
                           <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
                         )}
                       </div>
@@ -366,7 +366,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       <span className="font-bold text-blue-600 shrink-0 w-5">{item.nomor}.</span>
                       <div className="flex flex-col">
                         <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {(displayTarget === 'all' || displayTarget === 'tts') && (
+                        {displayTarget === 'tts' && (
                           <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
                         )}
                       </div>
@@ -385,7 +385,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           {displayTarget.startsWith('evaluasi') && <IdentitasIndividu />}
           <div className={`flex items-center gap-2 mb-5 ${displayTarget.startsWith('evaluasi') ? 'text-slate-800' : 'text-emerald-600'}`} style={{ pageBreakAfter: 'avoid' }}>
             <ListChecks size={20} className={displayTarget.startsWith('evaluasi') ? 'hidden' : ''} />
-            <h3 className="text-lg font-bold text-slate-800">{displayTarget.startsWith('evaluasi') ? 'Petunjuk Pengerjaan: Pilihlah satu jawaban yang menurut Anda paling tepat!' : 'I. Evaluasi Formatif'}</h3>
+            <h3 className="text-lg font-bold text-slate-800">{displayTarget.startsWith('evaluasi') ? 'Petunjuk Pengerjaan: Pilihlah satu jawaban yang menurut Anda paling tepat!' : 'J. Evaluasi Formatif'}</h3>
           </div>
           <div className="space-y-4">
             {result.pilihanGanda.map((pg: any, idx: number) => (
@@ -405,10 +405,10 @@ export const ModulContent: React.FC<ModulContentProps> = ({
         </div>
       )}
 
-      {/* J. Penilaian */}
+      {/* K. Penilaian */}
       {result.instrumenPenilaian && shouldRender('all') && (
         <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 text-slate-800 pt-4 mt-4' : 'p-6 md:p-8 bg-slate-800 text-slate-50'}`}>
-          <div className="flex items-center gap-2 mb-4 text-slate-400" style={{ pageBreakAfter: 'avoid' }}><ClipboardCheck size={20} /><h3 className={`text-lg font-bold ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-white'}`}>J. Instrumen Penilaian</h3></div>
+          <div className="flex items-center gap-2 mb-4 text-slate-400" style={{ pageBreakAfter: 'avoid' }}><ClipboardCheck size={20} /><h3 className={`text-lg font-bold ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-white'}`}>K. Instrumen Penilaian</h3></div>
           <div className="grid md:grid-cols-3 gap-5 text-sm" style={{ pageBreakInside: 'avoid' }}>
             <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border border-slate-300' : 'bg-slate-700/50 border border-slate-600'}`}>
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-300' : 'text-emerald-400 border-slate-600'}`}>Aspek Sikap</p>

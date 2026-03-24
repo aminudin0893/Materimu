@@ -347,7 +347,8 @@ export default function App() {
     // Wait for DOM update to ensure everything is rendered
     setTimeout(() => {
       try {
-        const element = document.getElementById('modul-ajar-content');
+        const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+        const element = document.getElementById(targetId);
         if (!element) {
           throw new Error("Gagal menemukan konten untuk disimpan.");
         }
@@ -363,6 +364,8 @@ export default function App() {
         if (target === 'lkpd') prefix = "LKPD";
         if (target === 'penugasan_individu') prefix = "Tugas_Individu";
         if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
+        if (target === 'tts') prefix = "TTS";
+        if (target === 'mindmap') prefix = "MindMap";
         if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
 
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
@@ -385,7 +388,8 @@ export default function App() {
             backgroundColor: '#ffffff',
             removeContainer: true,
             onclone: (clonedDoc: Document) => {
-              const clonedElement = clonedDoc.getElementById('modul-ajar-content');
+              const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+              const clonedElement = clonedDoc.getElementById(targetId);
               if (clonedElement) {
                 // Remove any elements that shouldn't be in the PDF
                 const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
@@ -459,7 +463,8 @@ export default function App() {
     }, 45000);
 
     setTimeout(() => {
-      const element = document.getElementById('modul-ajar-content');
+      const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+      const element = document.getElementById(targetId);
       if (!element) {
         clearTimeout(safetyTimeout);
         setError("Gagal menemukan konten untuk disimpan.");
@@ -485,6 +490,8 @@ export default function App() {
         if (target === 'lkpd') prefix = "LKPD";
         if (target === 'penugasan_individu') prefix = "Tugas_Individu";
         if (target === 'penugasan_kelompok') prefix = "Tugas_Kelompok";
+        if (target === 'tts') prefix = "TTS";
+        if (target === 'mindmap') prefix = "MindMap";
         if (target.startsWith('evaluasi')) prefix = "Soal_Evaluasi";
 
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
@@ -506,7 +513,8 @@ export default function App() {
           backgroundColor: '#ffffff',
           scrollY: 0,
           onclone: (clonedDoc: Document) => {
-            const clonedElement = clonedDoc.getElementById('modul-ajar-content');
+            const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+            const clonedElement = clonedDoc.getElementById(targetId);
             if (clonedElement) {
               const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
               toRemove.forEach(el => el.remove());
@@ -599,14 +607,22 @@ export default function App() {
     textToCopy += `H. PENUGASAN\n`;
     if (result.tugasIndividu) textToCopy += `1. Tugas Individu\n   - Judul: ${result.tugasIndividu.judul}\n   - Instruksi: ${result.tugasIndividu.instruksi}\n`;
     if (result.tugasKelompok) textToCopy += `2. Tugas Kelompok\n   - Judul: ${result.tugasKelompok.judul}\n   - Instruksi: ${result.tugasKelompok.instruksi}\n\n`;
+    if (result.tekaTekiSilang) {
+      textToCopy += `I. TEKA-TEKI SILANG (TTS)\n`;
+      textToCopy += `Mendatar:\n`;
+      result.tekaTekiSilang.mendatar?.forEach((item: any) => textToCopy += `${item.nomor}. ${item.pertanyaan} (Jawaban: ${item.jawaban})\n`);
+      textToCopy += `Menurun:\n`;
+      result.tekaTekiSilang.menurun?.forEach((item: any) => textToCopy += `${item.nomor}. ${item.pertanyaan} (Jawaban: ${item.jawaban})\n`);
+      textToCopy += `\n`;
+    }
     if (result.pilihanGanda?.length) {
-      textToCopy += `I. EVALUASI FORMATIF (Pilihan Ganda)\n`;
+      textToCopy += `J. EVALUASI FORMATIF (Pilihan Ganda)\n`;
       result.pilihanGanda.forEach((pg: any, i: number) => {
         textToCopy += `${i + 1}. ${pg.soal}\n   A. ${pg.opsiA}\n   B. ${pg.opsiB}\n   C. ${pg.opsiC}\n   D. ${pg.opsiD}\n   E. ${pg.opsiE}\n   Kunci: ${pg.kunci}\n\n`;
       });
     }
     if (result.instrumenPenilaian) {
-      textToCopy += `J. INSTRUMEN PENILAIAN\n1. Penilaian Sikap:\n`;
+      textToCopy += `K. INSTRUMEN PENILAIAN\n1. Penilaian Sikap:\n`;
       result.instrumenPenilaian.sikap?.forEach((s: string) => textToCopy += `   - ${s}\n`);
       textToCopy += `2. Penilaian Pengetahuan: ${result.instrumenPenilaian.pengetahuan}\n3. Penilaian Keterampilan:\n`;
       result.instrumenPenilaian.keterampilan?.forEach((k: string) => textToCopy += `   - ${k}\n`);
@@ -786,13 +802,13 @@ export default function App() {
             <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
               {[
                 { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
+                { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
                 { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
                 { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
                 { id: 'penugasan_kelompok', label: 'Tugas Kelompok', icon: <Users size={16} /> },
                 { id: 'tts', label: 'Teka-Teki Silang', icon: <Grid size={16} /> },
                 { id: 'evaluasi_tanpa_kunci', label: 'Soal (Siswa)', icon: <ListChecks size={16} /> },
                 { id: 'evaluasi_dengan_kunci', label: 'Soal (Guru)', icon: <Check size={16} /> },
-                { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -867,10 +883,28 @@ export default function App() {
                     )}
 
                     <button 
+                      onClick={() => exportType === 'pdf' ? handleExportPDF('mindmap') : handleExportJPG('mindmap')}
+                      className="flex flex-col items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <Share2 size={24} />
+                      </div>
+                      <span className="text-sm font-medium text-slate-700">Mind Map</span>
+                    </button>
+
+                    <button 
                       onClick={() => exportType === 'pdf' ? handleExportPDF('lkpd') : handleExportJPG('lkpd')}
                       className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
                     >
                       <span className="font-bold text-slate-700">Lembar LKPD</span>
+                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                    </button>
+
+                    <button 
+                      onClick={() => exportType === 'pdf' ? handleExportPDF('tts') : handleExportJPG('tts')}
+                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                    >
+                      <span className="font-bold text-slate-700">Teka-Teki Silang (TTS)</span>
                       <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
                     </button>
 
@@ -927,9 +961,12 @@ export default function App() {
 
         {result && (
           <div id="modul-ajar-content-container">
-            {viewMode === 'mindmap' ? (
-              <MindMap data={result} />
-            ) : (
+            {(viewMode === 'mindmap' || (isExportingMode && exportTarget === 'mindmap')) && (
+              <div id="mindmap-content" className={viewMode === 'all' ? 'mb-8' : ''}>
+                <MindMap data={result} />
+              </div>
+            )}
+            {viewMode !== 'mindmap' && (
               <ModulContent 
                 result={result}
                 subject={subject}
