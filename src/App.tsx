@@ -43,9 +43,83 @@ export default function App() {
   const [requestHistory, setRequestHistory] = useState<number[]>([]);
   const [customApiKey, setCustomApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const jpgMenuRef = useRef<HTMLDivElement>(null);
+
+  const loadingMessages = [
+    "Menganalisis kurikulum terbaru...",
+    "Menyusun tujuan pembelajaran (TP)...",
+    "Merancang alur pembelajaran (ATP)...",
+    "Membangun pertanyaan pemantik...",
+    "Menyusun materi inti & dalil...",
+    "Membuat Lembar Kerja (LKPD)...",
+    "Menyusun instrumen penilaian...",
+    "Membangun Teka-Teki Silang...",
+    "Menyusun soal evaluasi formatif...",
+    "Hampir selesai, sedang merapikan format..."
+  ];
+
+  // Helper to fix truncated JSON from AI
+  const fixTruncatedJson = (json: string): string => {
+    try {
+      JSON.parse(json);
+      return json;
+    } catch (e) {
+      let stack: string[] = [];
+      let inString = false;
+      let escaped = false;
+      let lastValidIndex = 0;
+
+      for (let i = 0; i < json.length; i++) {
+        const char = json[i];
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === '"') { inString = !inString; continue; }
+        if (inString) continue;
+
+        if (char === '{') { stack.push('}'); lastValidIndex = i; }
+        else if (char === '[') { stack.push(']'); lastValidIndex = i; }
+        else if (char === '}' || char === ']') {
+          if (stack.length > 0 && stack[stack.length - 1] === char) {
+            stack.pop();
+            lastValidIndex = i;
+          }
+        }
+      }
+
+      let fixedJson = json.trim();
+      
+      // Remove trailing comma or colon if present at the end of truncated string
+      if (fixedJson.endsWith(',') || fixedJson.endsWith(':')) {
+        fixedJson = fixedJson.slice(0, -1).trim();
+      }
+      
+      if (inString) fixedJson += '"';
+      while (stack.length > 0) {
+        fixedJson += stack.pop();
+      }
+      
+      try {
+        JSON.parse(fixedJson);
+        return fixedJson;
+      } catch (e2) {
+        // If still failing, try to find the last complete object/array by backtracking
+        for (let i = json.length - 1; i >= 0; i--) {
+          if (json[i] === '}' || json[i] === ']') {
+            try {
+              const sub = json.substring(0, i + 1);
+              JSON.parse(sub);
+              return sub;
+            } catch (e) {}
+          }
+        }
+        return json; // Return original if all else fails
+      }
+    }
+  };
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -127,13 +201,44 @@ export default function App() {
     }
   }, [requestHistory]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    let interval: any;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 3000);
+    } else {
+      setLoadingMessageIndex(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
   const resetAllStates = () => {
-    setIsLoading(false);
-    setIsPdfLoading(false);
-    setIsJpgLoading(false);
-    setIsExportingMode(false);
-    setExpandAll(false);
-    setError('');
+    setResult(null);
+    setTopic("");
+    setError("");
+    localStorage.removeItem('last_generated_modul');
+  };
+
+  const handleCopyAll = () => {
+    handleCopy();
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link aplikasi telah disalin ke clipboard!");
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -248,6 +353,10 @@ export default function App() {
       });
 
       const responseText = response.text;
+      const finishReason = response.candidates?.[0]?.finishReason;
+      if (finishReason === 'MAX_TOKENS') {
+        console.warn("AI response was truncated due to max tokens.");
+      }
       console.log("AI Response Raw:", responseText);
       
       if (responseText) {
@@ -269,19 +378,32 @@ export default function App() {
         }
         
         try {
-          const parsedResult = JSON.parse(cleanJson);
-          
-          // Validasi minimal field
-          if (!parsedResult.judulMateri || !parsedResult.tp) {
-            throw new Error('Data yang dihasilkan tidak lengkap.');
+          let parsedResult;
+          try {
+            parsedResult = JSON.parse(cleanJson);
+          } catch (e) {
+            console.warn("Initial JSON parse failed, attempting to fix truncated JSON...");
+            const fixedJson = fixTruncatedJson(cleanJson);
+            parsedResult = JSON.parse(fixedJson);
           }
+          
+          // Fallback for missing fields to ensure app doesn't crash
+          if (!parsedResult.judulMateri) {
+            parsedResult.judulMateri = topic.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+          }
+          if (!parsedResult.tp || !Array.isArray(parsedResult.tp)) parsedResult.tp = ["Tujuan pembelajaran sedang disusun..."];
+          if (!parsedResult.atpTabel) parsedResult.atpTabel = [];
+          if (!parsedResult.pengertian) parsedResult.pengertian = "Materi sedang dalam proses penyusunan...";
+          if (!parsedResult.subTopik) parsedResult.subTopik = [];
+          if (!parsedResult.pilihanGanda) parsedResult.pilihanGanda = [];
+          if (!parsedResult.tekaTekiSilang) parsedResult.tekaTekiSilang = { mendatar: [], menurun: [] };
 
           parsedResult.generatedSubject = subject; 
           setResult(parsedResult);
         } catch (parseError) {
           console.error('JSON Parse Error:', parseError);
           console.error('Cleaned JSON that failed:', cleanJson);
-          throw new Error('Gagal memproses data modul. AI memberikan format yang tidak lengkap atau terputus. Silakan coba lagi dengan topik yang lebih spesifik.');
+          throw new Error('Gagal memproses data modul secara sempurna. AI memberikan format yang terputus. Silakan coba lagi atau gunakan topik yang lebih spesifik untuk hasil yang lebih lengkap.');
         }
       } else {
         throw new Error('Respons tidak valid dari AI.');
@@ -334,7 +456,7 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
 
-    // Safety timeout to prevent hanging (45 seconds)
+    // Safety timeout to prevent hanging (90 seconds)
     const safetyTimeout = setTimeout(() => {
       if (setIsPdfLoading) {
         setIsPdfLoading(false);
@@ -342,7 +464,7 @@ export default function App() {
         setExpandAll(false);
         setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar untuk diproses secara otomatis. Silakan gunakan fitur 'Cetak Langsung (Print)' untuk hasil yang lebih stabil.");
       }
-    }, 45000);
+    }, 90000);
 
     // Wait for DOM update to ensure everything is rendered
     setTimeout(() => {
@@ -375,12 +497,13 @@ export default function App() {
         let dynamicScale = 1.2; // Start with a lower scale for better stability
         if (elementHeight > 5000) dynamicScale = 1.0;
         if (elementHeight > 10000) dynamicScale = 0.8;
-        if (elementHeight > 15000) dynamicScale = 0.6;
+        if (elementHeight > 15000) dynamicScale = 0.5; // Reduced further
+        if (elementHeight > 20000) dynamicScale = 0.4; // Added tier for extremely large docs
 
         const opt = {
           margin: [10, 10, 10, 10], 
           filename: fileName,
-          image: { type: 'jpeg', quality: 0.90 },
+          image: { type: 'jpeg', quality: 0.80 }, // Reduced quality for memory
           html2canvas: { 
             scale: dynamicScale, 
             useCORS: true, 
@@ -452,7 +575,7 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
     
-    // Safety timeout to prevent hanging (45 seconds)
+    // Safety timeout to prevent hanging (90 seconds)
     const safetyTimeout = setTimeout(() => {
       if (setIsJpgLoading) {
         setIsJpgLoading(false);
@@ -460,7 +583,7 @@ export default function App() {
         setExpandAll(false);
         setError("Proses penyimpanan gambar memakan waktu terlalu lama. Dokumen mungkin terlalu besar.");
       }
-    }, 45000);
+    }, 90000);
 
     setTimeout(() => {
       const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
@@ -501,6 +624,7 @@ export default function App() {
         if (elementHeight > 5000) dynamicScale = 1.0;
         if (elementHeight > 10000) dynamicScale = 0.7; // Lower scale for very long documents
         if (elementHeight > 15000) dynamicScale = 0.5; // Extreme reduction for stability
+        if (elementHeight > 20000) dynamicScale = 0.4; // Added tier
 
         // Use html2canvas from the window object (loaded via html2pdf bundle)
         const html2canvasLib = (window as any).html2canvas;
@@ -713,18 +837,15 @@ export default function App() {
                     <div className="absolute right-1.5 flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={async () => {
-                          try {
-                            const text = await navigator.clipboard.readText();
-                            setCustomApiKey(text);
-                          } catch (err) {
-                            console.error('Gagal menempel teks', err);
+                        onClick={() => {
+                          if (customApiKey) {
+                            navigator.clipboard.writeText(customApiKey);
                           }
                         }}
                         className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
-                        title="Tempel dari clipboard"
+                        title="Salin API Key"
                       >
-                        <Clipboard size={14} />
+                        <Copy size={14} />
                       </button>
                       <button
                         type="button"
@@ -751,34 +872,118 @@ export default function App() {
               </div>
 
               {showAdvanced && (
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Penyusun</label><input type="text" value={namaPenyusun} onChange={e=>setNamaPenyusun(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
-                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Fase / Kelas</label><select value={kelas} onChange={e=>setKelas(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Fase A - Kelas I/II">Fase A - Kelas I/II</option><option value="Fase B - Kelas III/IV">Fase B - Kelas III/IV</option><option value="Fase C - Kelas V/VI">Fase C - Kelas V/VI</option><option value="Fase D - Kelas VII">Fase D - Kelas VII</option><option value="Fase D - Kelas VIII">Fase D - Kelas VIII</option><option value="Fase D - Kelas IX">Fase D - Kelas IX</option><option value="Fase E - Kelas X">Fase E - Kelas X</option><option value="Fase F - Kelas XI/XII">Fase F - Kelas XI/XII</option></select></div>
-                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Semester</label><select value={semester} onChange={e=>setSemester(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
-                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tahun Ajaran</label><input type="text" value={tahunAjaran} onChange={e=>setTahunAjaran(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
-                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Jumlah Soal Evaluasi</label><input type="number" min="1" max="50" value={numQuestions} onChange={e=>setNumQuestions(parseInt(e.target.value) || 1)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
-                    <div className="md:col-span-2"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Alokasi Waktu</label><input type="text" value={alokasiWaktu} onChange={e=>setAlokasiWaktu(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-slate-50/50 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Nama Penyusun</label>
+                    <input 
+                      type="text" 
+                      value={namaPenyusun} 
+                      onChange={e=>setNamaPenyusun(e.target.value)} 
+                      placeholder="Nama Guru..."
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
                   </div>
-                )}
-
-              <div className="pt-2 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col items-start gap-1">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                    <div className={`w-2 h-2 rounded-full ${requestHistory.filter(t => t > Date.now() - 60000).length >= 12 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                      Estimasi Kuota: {requestHistory.filter(t => t > Date.now() - 60000).length} / 15 RPM (Free Tier)
-                    </span>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Fase / Kelas</label>
+                    <select 
+                      value={kelas} 
+                      onChange={e=>setKelas(e.target.value)} 
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    >
+                      <option value="Fase A - Kelas I/II">Fase A - Kelas I/II</option>
+                      <option value="Fase B - Kelas III/IV">Fase B - Kelas III/IV</option>
+                      <option value="Fase C - Kelas V/VI">Fase C - Kelas V/VI</option>
+                      <option value="Fase D - Kelas VII">Fase D - Kelas VII</option>
+                      <option value="Fase D - Kelas VIII">Fase D - Kelas VIII</option>
+                      <option value="Fase D - Kelas IX">Fase D - Kelas IX</option>
+                      <option value="Fase E - Kelas X">Fase E - Kelas X</option>
+                      <option value="Fase F - Kelas XI/XII">Fase F - Kelas XI/XII</option>
+                    </select>
                   </div>
-                  <p className="text-[9px] text-slate-400 ml-1 italic">Reset otomatis setiap 60 detik per permintaan.</p>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Semester</label>
+                    <select 
+                      value={semester} 
+                      onChange={e=>setSemester(e.target.value)} 
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    >
+                      <option value="Ganjil">Ganjil</option>
+                      <option value="Genap">Genap</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Tahun Ajaran</label>
+                    <input 
+                      type="text" 
+                      value={tahunAjaran} 
+                      onChange={e=>setTahunAjaran(e.target.value)} 
+                      placeholder="2023/2024"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Jumlah Soal</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="50" 
+                      value={numQuestions} 
+                      onChange={e=>setNumQuestions(parseInt(e.target.value) || 1)} 
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Alokasi Waktu</label>
+                    <input 
+                      type="text" 
+                      value={alokasiWaktu} 
+                      onChange={e=>setAlokasiWaktu(e.target.value)} 
+                      placeholder="2 JP (2 x 45 Menit)"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
+                  </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isLoading || isPdfLoading || isJpgLoading || !topic.trim()}
-                  className="w-full md:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors shadow-sm"
-                >
-                  {isLoading ? (<><Loader2 className="animate-spin" size={18} /> Menyusun Dokumen...</>) : (<><Sparkles size={18} /> Buat Modul Ajar</>)}
-                </button>
-              </div>
+              )}
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex flex-col items-start gap-1">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
+                      <div className={`w-2 h-2 rounded-full ${requestHistory.filter(t => t > Date.now() - 60000).length >= 12 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                        Estimasi Kuota: {requestHistory.filter(t => t > Date.now() - 60000).length} / 15 RPM (Free Tier)
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-slate-400 ml-1 italic">Reset otomatis setiap 60 detik per permintaan.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="p-3 text-slate-500 bg-white border border-slate-200 rounded-xl hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm"
+                      title="Bagikan Aplikasi"
+                    >
+                      <Share2 size={20} />
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading || isPdfLoading || isJpgLoading || !topic.trim()}
+                      className="flex-1 md:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-100 active:scale-95"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="animate-spin" size={18} /> 
+                          <span className="animate-pulse">{loadingMessages[loadingMessageIndex]}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={18} /> 
+                          Buat Modul Ajar Canggih
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
             </form>
             {error && (
               <div className="mt-3 p-3 bg-red-50 text-red-600 rounded-xl flex items-center justify-between border border-red-100 text-sm animate-in fade-in slide-in-from-top-2">
@@ -821,7 +1026,16 @@ export default function App() {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
+                <button 
+                  onClick={resetAllStates}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg font-bold text-xs hover:bg-white hover:text-red-600 transition-all shadow-sm active:scale-95"
+                  title="Hapus hasil saat ini dan buat modul baru"
+                >
+                  <RotateCw size={14} /> Buat Baru
+                </button>
+              </div>
               <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
                 <button 
                   onClick={() => { setExportType('pdf'); setShowExportModal(true); }} 
@@ -844,6 +1058,17 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {/* SCROLL TO TOP */}
+            {showScrollTop && (
+              <button
+                onClick={scrollToTop}
+                className="fixed bottom-8 right-8 p-3.5 bg-emerald-600 text-white rounded-full shadow-2xl hover:bg-emerald-700 transition-all z-50 animate-in fade-in slide-in-from-bottom-6 active:scale-90"
+                title="Kembali ke Atas"
+              >
+                <ChevronDown className="rotate-180" size={24} />
+              </button>
+            )}
 
             {/* Modal Export */}
             {showExportModal && (
