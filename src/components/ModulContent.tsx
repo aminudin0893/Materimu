@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown 
+  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown, Grid 
 } from 'lucide-react';
 
 interface ModulContentProps {
@@ -309,6 +309,72 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                 <div className="text-slate-800 text-sm">{formatText(result.tugasKelompok.instruksi)}</div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* I. Teka-Teki Silang */}
+      {result.tekaTekiSilang && (shouldRender('all') || shouldRender('tts')) && (
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
+          {displayTarget === 'tts' && <IdentitasIndividu />}
+          <div className="flex items-center gap-2 mb-6 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
+            <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
+            <h3 className="text-lg font-bold text-slate-800">Teka-Teki Silang (TTS)</h3>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Grid TTS (Placeholder Visual) */}
+            <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl" style={{ pageBreakInside: 'avoid' }}>
+              <div className="grid grid-cols-10 gap-1 mb-4">
+                {Array.from({ length: 100 }).map((_, i) => (
+                  <div key={i} className={`w-6 h-6 border ${Math.random() > 0.7 ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[8px] font-bold text-slate-400`}>
+                    {Math.random() > 0.9 ? Math.floor(Math.random() * 10) + 1 : ''}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 italic text-center">Visualisasi kotak TTS di atas adalah ilustrasi. Silakan gunakan pertanyaan di bawah untuk mengisi kotak yang tersedia.</p>
+            </div>
+
+            {/* Pertanyaan TTS */}
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                  <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs">M</span> Mendatar
+                </h4>
+                <div className="space-y-3">
+                  {result.tekaTekiSilang.mendatar?.map((item: any, idx: number) => (
+                    <div key={idx} className="text-sm flex gap-3">
+                      <span className="font-bold text-emerald-600 shrink-0 w-5">{item.nomor}.</span>
+                      <div className="flex flex-col">
+                        <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
+                        {(displayTarget === 'all' || displayTarget === 'tts') && (
+                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                  <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs">M</span> Menurun
+                </h4>
+                <div className="space-y-3">
+                  {result.tekaTekiSilang.menurun?.map((item: any, idx: number) => (
+                    <div key={idx} className="text-sm flex gap-3">
+                      <span className="font-bold text-blue-600 shrink-0 w-5">{item.nomor}.</span>
+                      <div className="flex flex-col">
+                        <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
+                        {(displayTarget === 'all' || displayTarget === 'tts') && (
+                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
