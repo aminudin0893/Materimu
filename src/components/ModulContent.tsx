@@ -573,7 +573,17 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]'} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
-                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[7px] leading-none z-10 text-black font-black">{cell.number}</span>}
+                      {cell.number && (
+                        <span 
+                          className="absolute top-0 left-0 p-[1px] text-[8px] leading-none z-20 text-black font-black crossword-number"
+                          style={{ 
+                            WebkitPrintColorAdjust: 'exact',
+                            printColorAdjust: 'exact'
+                          }}
+                        >
+                          {cell.number}
+                        </span>
+                      )}
                       {cell.isWhite && ttsMode === 'guru' && <span className="z-0">{cell.char}</span>}
                     </div>
                   ));
