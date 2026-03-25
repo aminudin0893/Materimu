@@ -291,7 +291,7 @@ export default function App() {
           2. Jika penjelasan panjang, WAJIB pecah jadi beberapa paragraf (\\n\\n). 
           ${instruksiPendekatan} 
           4. 3-4 TP. 
-          5. Buat atpTabel yang memuat (tahap, kegiatan, durasi). Pada bagian 'kegiatan', jelaskan interaksi Guru & Siswa secara rinci, sistematis, dan profesional (gunakan poin-poin jika perlu). Pastikan durasi total sesuai alokasi waktu. 
+          5. Buat atpTabel yang memuat (tahap, kegiatan, durasi). WAJIB mencakup 3 tahap utama: Pendahuluan, Kegiatan Inti (sesuai sintaks model pembelajaran yang dipilih), dan Penutup. PENTING: Kolom 'kegiatan' (Deskripsi Kegiatan Guru & Siswa) dan 'durasi' HARUS TERISI LENGKAP, JANGAN DIBIARKAN KOSONG. Pada bagian 'kegiatan', jelaskan interaksi Guru & Siswa secara sangat rinci, langkah-demi-langkah, sistematis, dan profesional (gunakan poin-poin penomoran). Pastikan durasi total sesuai alokasi waktu. 
           6. Buat 2 Pertanyaan Pemantik, masing-masing lengkapi dengan 2 contoh jawaban alternatif dari siswa dan penjelasan/penguatan dari guru. 
           7. Pengertian min 2 paragraf. 
           8. Minimal 1 Dalil. 
@@ -401,7 +401,16 @@ export default function App() {
             parsedResult.judulMateri = topic.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
           }
           if (!parsedResult.tp || !Array.isArray(parsedResult.tp)) parsedResult.tp = ["Tujuan pembelajaran sedang disusun..."];
-          if (!parsedResult.atpTabel) parsedResult.atpTabel = [];
+          if (!parsedResult.atpTabel || !Array.isArray(parsedResult.atpTabel) || parsedResult.atpTabel.length === 0) {
+            parsedResult.atpTabel = initialData.atpTabel;
+          } else {
+            // Pastikan setiap baris memiliki konten
+            parsedResult.atpTabel = parsedResult.atpTabel.map((row: any) => ({
+              tahap: row.tahap || "Tahap Pembelajaran",
+              kegiatan: row.kegiatan && row.kegiatan.trim() !== "" ? row.kegiatan : "Deskripsi kegiatan sedang disusun oleh AI...",
+              durasi: row.durasi && row.durasi.trim() !== "" ? row.durasi : "15 Menit"
+            }));
+          }
           if (!parsedResult.pengertian) parsedResult.pengertian = "Materi sedang dalam proses penyusunan...";
           if (!parsedResult.subTopik) parsedResult.subTopik = [];
           if (!parsedResult.pilihanGanda) parsedResult.pilihanGanda = [];
