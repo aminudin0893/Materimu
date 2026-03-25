@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize2, Minimize2
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
@@ -44,6 +44,7 @@ export default function App() {
   const [ttsNumQuestions, setTtsNumQuestions] = useState(10);
   const [ttsMode, setTtsMode] = useState<'guru' | 'siswa'>('siswa');
   const [isTtsLoading, setIsTtsLoading] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [requestHistory, setRequestHistory] = useState<number[]>([]);
   const [customApiKey, setCustomApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
@@ -850,21 +851,30 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8 pb-20 relative">
-      {/* Refresh Button */}
+    <div className={`min-h-screen font-sans p-4 md:p-8 pb-20 relative transition-colors duration-500 ${isFocusMode ? 'bg-white' : 'bg-slate-50 text-slate-800'}`}>
+      {/* Refresh & Focus Mode Buttons */}
       {!isExportingMode && (
-        <button 
-          onClick={() => window.location.reload()}
-          className="fixed top-4 right-4 z-[10000] p-2.5 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-xl shadow-sm transition-all group no-print"
-          title="Muat Ulang Halaman"
-        >
-          <RotateCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-        </button>
+        <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2 no-print">
+          <button 
+            onClick={() => window.location.reload()}
+            className="p-2.5 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-xl shadow-sm transition-all group"
+            title="Muat Ulang Halaman"
+          >
+            <RotateCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+          </button>
+          <button 
+            onClick={() => setIsFocusMode(!isFocusMode)}
+            className={`p-2.5 backdrop-blur-md border rounded-xl shadow-sm transition-all group ${isFocusMode ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-white/80 border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-white'}`}
+            title={isFocusMode ? "Keluar Mode Fokus" : "Mode Fokus (Sembunyikan Menu)"}
+          >
+            {isFocusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        </div>
       )}
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className={`mx-auto space-y-6 transition-all duration-500 ${isFocusMode ? 'max-w-5xl pt-4' : 'max-w-4xl pt-0'}`}>
         
-        {!isExportingMode && (
+        {!isExportingMode && !isFocusMode && (
           <header className="text-center pt-6 pb-2">
             <div className="inline-flex items-center justify-center p-3 bg-emerald-600 text-white rounded-xl mb-4 shadow-sm">
               <BookOpen size={28} />
@@ -875,7 +885,7 @@ export default function App() {
           </header>
         )}
 
-        {!isExportingMode && (
+        {!isExportingMode && !isFocusMode && (
           <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
             <form onSubmit={handleGenerate} className="space-y-4">
               <div className="flex flex-col md:flex-row gap-3">
@@ -1082,63 +1092,67 @@ export default function App() {
 
         {result && !isExportingMode && (
           <section className="space-y-4">
-            <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
-              {[
-                { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
-                { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
-                { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
-                { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
-                { id: 'penugasan_kelompok', label: 'Tugas Kelompok', icon: <Users size={16} /> },
-                { id: 'tts', label: 'Teka-Teki Silang', icon: <Grid size={16} /> },
-                { id: 'evaluasi_tanpa_kunci', label: 'Soal (Siswa)', icon: <ListChecks size={16} /> },
-                { id: 'evaluasi_dengan_kunci', label: 'Soal (Guru)', icon: <Check size={16} /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setViewMode(tab.id)}
-                  className={`flex items-center justify-center gap-2 flex-1 min-w-[150px] py-2.5 px-4 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${viewMode === tab.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
-                <button 
-                  onClick={resetAllStates}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg font-bold text-xs hover:bg-white hover:text-red-600 transition-all shadow-sm active:scale-95"
-                  title="Hapus hasil saat ini dan buat modul baru"
-                >
-                  <RotateCw size={14} /> Buat Baru
-                </button>
+            {!isFocusMode && (
+              <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
+                {[
+                  { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
+                  { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
+                  { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
+                  { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
+                  { id: 'penugasan_kelompok', label: 'Tugas Kelompok', icon: <Users size={16} /> },
+                  { id: 'tts', label: 'Teka-Teki Silang', icon: <Grid size={16} /> },
+                  { id: 'evaluasi_tanpa_kunci', label: 'Soal (Siswa)', icon: <ListChecks size={16} /> },
+                  { id: 'evaluasi_dengan_kunci', label: 'Soal (Guru)', icon: <Check size={16} /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setViewMode(tab.id)}
+                    className={`flex items-center justify-center gap-2 flex-1 min-w-[150px] py-2.5 px-4 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${viewMode === tab.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
               </div>
-              <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
-                <button 
-                  onClick={() => { setExportType('pdf'); setShowExportModal(true); }} 
-                  disabled={isPdfLoading || isJpgLoading} 
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-sm"
-                >
-                  {isPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} Simpan PDF
-                </button>
-                
-                <button 
-                  onClick={() => { setExportType('jpg'); setShowExportModal(true); }} 
-                  disabled={isPdfLoading || isJpgLoading} 
-                  className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg font-bold text-sm"
-                >
-                  {isJpgLoading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} Simpan Gambar
-                </button>
+            )}
 
-                <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-sm">
-                  {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Tersalin!' : 'Salin Teks'}
-                </button>
+            {!isFocusMode && (
+              <div className="flex flex-col sm:flex-row justify-between items-center px-1 pb-2 gap-3">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-emerald-600" /> Tinjauan</h2>
+                  <button 
+                    onClick={resetAllStates}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg font-bold text-xs hover:bg-white hover:text-red-600 transition-all shadow-sm active:scale-95"
+                    title="Hapus hasil saat ini dan buat modul baru"
+                  >
+                    <RotateCw size={14} /> Buat Baru
+                  </button>
+                </div>
+                <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
+                  <button 
+                    onClick={() => { setExportType('pdf'); setShowExportModal(true); }} 
+                    disabled={isPdfLoading || isJpgLoading} 
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-sm"
+                  >
+                    {isPdfLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} Simpan PDF
+                  </button>
+                  
+                  <button 
+                    onClick={() => { setExportType('jpg'); setShowExportModal(true); }} 
+                    disabled={isPdfLoading || isJpgLoading} 
+                    className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg font-bold text-sm"
+                  >
+                    {isJpgLoading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />} Simpan Gambar
+                  </button>
+
+                  <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-sm">
+                    {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Tersalin!' : 'Salin Teks'}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* SCROLL TO TOP */}
-            {showScrollTop && (
+            {showScrollTop && !isFocusMode && (
               <button
                 onClick={scrollToTop}
                 className="fixed bottom-8 right-8 p-3.5 bg-emerald-600 text-white rounded-full shadow-2xl hover:bg-emerald-700 transition-all z-50 animate-in fade-in slide-in-from-bottom-6 active:scale-90"
