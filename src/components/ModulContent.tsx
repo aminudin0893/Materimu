@@ -440,7 +440,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Grid TTS (Dynamic Generation) */}
-            <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl" style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+            <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl shadow-[inset_0_0_0_1000px_#f8fafc]" style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
               <div className="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5 mb-4 w-full max-w-[400px]">
                 {(() => {
                   const size = 15;
@@ -570,10 +570,10 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
+                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]'} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
-                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[5px] leading-none z-10">{cell.number}</span>}
+                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[7px] leading-none z-10 text-black font-black">{cell.number}</span>}
                       {cell.isWhite && ttsMode === 'guru' && <span className="z-0">{cell.char}</span>}
                     </div>
                   ));
