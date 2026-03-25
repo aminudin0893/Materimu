@@ -25,7 +25,32 @@ export const ModulContent: React.FC<ModulContentProps> = ({
   const formatText = (text: string) => {
     if (!text) return null;
     return text.split('\n').map((paragraph, index) => {
-      if (paragraph.trim() === '') return null;
+      const trimmed = paragraph.trim();
+      if (trimmed === '') return null;
+      
+      // Handle bullet points (-, *, •)
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('• ')) {
+        return (
+          <div key={index} className="flex gap-2 mb-1.5 pl-2 text-justify leading-relaxed" style={{ pageBreakInside: 'avoid' }}>
+            <span className="text-indigo-500 font-bold shrink-0">•</span>
+            <span>{trimmed.substring(2)}</span>
+          </div>
+        );
+      }
+      
+      // Handle numbered points (1., 2., etc)
+      if (/^\d+\.\s/.test(trimmed)) {
+        const match = trimmed.match(/^(\d+\.)\s(.*)/);
+        if (match) {
+          return (
+            <div key={index} className="flex gap-2 mb-1.5 pl-2 text-justify leading-relaxed" style={{ pageBreakInside: 'avoid' }}>
+              <span className="text-indigo-600 font-bold shrink-0">{match[1]}</span>
+              <span>{match[2]}</span>
+            </div>
+          );
+        }
+      }
+
       return (
         <p key={index} className="mb-2 last:mb-0 text-justify leading-relaxed" style={{ pageBreakInside: 'avoid' }}>
           {paragraph}
@@ -181,20 +206,28 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             <h3 className="text-lg font-bold text-slate-800">D. Alur Pembelajaran (1 Pertemuan)</h3>
           </div>
           <div className={`${isExportingMode || displayTarget !== 'all' ? '' : 'overflow-x-auto'}`}>
-            <table className={`w-full text-left border-collapse ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-500' : 'border border-slate-400 bg-white'}`} style={{ pageBreakInside: 'auto' }}>
+            <table className={`w-full text-left border-collapse ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-400' : 'border border-slate-300 bg-white shadow-sm rounded-xl overflow-hidden'}`} style={{ pageBreakInside: 'auto' }}>
               <thead style={{ display: 'table-header-group' }}>
-                <tr className={`text-slate-800 ${isExportingMode || displayTarget !== 'all' ? 'bg-slate-200 border-slate-500' : 'bg-slate-200 border-slate-400'}`}>
-                  <th className={`p-3 font-bold w-1/4 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>Tahap Kegiatan</th>
-                  <th className={`p-3 font-bold w-auto text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>Deskripsi Kegiatan Guru & Siswa</th>
-                  <th className={`p-3 font-bold w-32 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>Durasi</th>
+                <tr className={`text-slate-800 ${isExportingMode || displayTarget !== 'all' ? 'bg-slate-100 border-slate-400' : 'bg-slate-100 border-slate-300'}`}>
+                  <th className={`p-4 font-bold w-1/4 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Tahap Kegiatan</th>
+                  <th className={`p-4 font-bold w-auto text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Deskripsi Kegiatan Guru & Siswa</th>
+                  <th className={`p-4 font-bold w-32 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Durasi</th>
                 </tr>
               </thead>
               <tbody className="text-slate-800" style={{ pageBreakInside: 'auto' }}>
                 {result.atpTabel?.map((row: any, i: number) => (
-                  <tr key={i} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'auto' }}>
-                    <td className={`p-3 font-semibold align-top text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>{row.tahap}</td>
-                    <td className={`p-3 align-top leading-relaxed border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>{formatText(row.kegiatan)}</td>
-                    <td className={`p-3 font-bold text-center align-top whitespace-nowrap border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-500' : 'border-slate-400'}`}>{row.durasi}</td>
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'auto' }}>
+                    <td className={`p-4 font-bold align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'} bg-slate-50/30`}>
+                      <span className="text-indigo-700 text-sm">{row.tahap}</span>
+                    </td>
+                    <td className={`p-4 align-top leading-relaxed border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'} text-sm`}>
+                      {formatText(row.kegiatan)}
+                    </td>
+                    <td className={`p-4 align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-400' : 'border-slate-300'}`}>
+                      <span className={`inline-block px-3 py-1 rounded-full font-bold text-xs ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-400' : 'bg-indigo-100 text-indigo-700 border border-indigo-200'}`}>
+                        {row.durasi}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

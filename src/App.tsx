@@ -286,7 +286,7 @@ export default function App() {
           2. Jika penjelasan panjang, WAJIB pecah jadi beberapa paragraf (\\n\\n). 
           ${instruksiPendekatan} 
           4. 3-4 TP. 
-          5. Buat atpTabel yang memuat (tahap, kegiatan, durasi) dan pastikan durasi total sesuai. 
+          5. Buat atpTabel yang memuat (tahap, kegiatan, durasi). Pada bagian 'kegiatan', jelaskan interaksi Guru & Siswa secara rinci, sistematis, dan profesional (gunakan poin-poin jika perlu). Pastikan durasi total sesuai alokasi waktu. 
           6. Buat 2 Pertanyaan Pemantik, masing-masing lengkapi dengan 2 contoh jawaban alternatif dari siswa dan penjelasan/penguatan dari guru. 
           7. Pengertian min 2 paragraf. 
           8. Minimal 1 Dalil. 
