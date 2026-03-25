@@ -441,39 +441,128 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           <div className="grid md:grid-cols-2 gap-8">
             {/* Grid TTS (Dynamic Generation) */}
             <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl" style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
-              <div className="grid grid-cols-12 gap-1 mb-4">
+              <div className="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5 mb-4 w-full max-w-[400px]">
                 {(() => {
-                  const size = 12;
+                  const size = 15;
                   const grid = Array(size * size).fill(null).map(() => ({ char: '', number: '', isWhite: false }));
                   
                   const { mendatar = [], menurun = [] } = result.tekaTekiSilang;
                   
-                  // Place Mendatar
-                  mendatar.forEach((item: any, idx: number) => {
-                    const row = idx * 2 + 1;
-                    const colStart = 1;
+                  // Helper to place a word
+                  const placeWord = (item: any, row: number, col: number, isHorizontal: boolean) => {
                     const word = (item.jawaban || '').toUpperCase();
                     for (let i = 0; i < word.length; i++) {
-                      const pos = row * size + (colStart + i);
-                      if (pos < size * size) {
-                        grid[pos].isWhite = true;
-                        grid[pos].char = word[i];
-                        if (i === 0) grid[pos].number = item.nomor.toString();
+                      const r = isHorizontal ? row : row + i;
+                      const c = isHorizontal ? col + i : col;
+                      const pos = r * size + c;
+                      grid[pos].isWhite = true;
+                      grid[pos].char = word[i];
+                      if (i === 0) {
+                        const existing = grid[pos].number;
+                        grid[pos].number = existing ? `${existing},${item.nomor}` : item.nomor.toString();
                       }
                     }
-                  });
-                  
-                  // Place Menurun
-                  menurun.forEach((item: any, idx: number) => {
-                    const col = idx * 2 + 1;
-                    const rowStart = 1;
-                    const word = (item.jawaban || '').toUpperCase();
+                  };
+
+                  // Helper to check if a word can be placed
+                  const canPlace = (word: string, row: number, col: number, isHorizontal: boolean) => {
+                    if (isHorizontal) {
+                      if (col + word.length > size) return false;
+                      if (col > 0 && grid[row * size + (col - 1)].isWhite) return false;
+                      if (col + word.length < size && grid[row * size + (col + word.length)].isWhite) return false;
+                    } else {
+                      if (row + word.length > size) return false;
+                      if (row > 0 && grid[(row - 1) * size + col].isWhite) return false;
+                      if (row + word.length < size && grid[(row + word.length) * size + col].isWhite) return false;
+                    }
+
                     for (let i = 0; i < word.length; i++) {
-                      const pos = (rowStart + i) * size + col;
-                      if (pos < size * size) {
-                        grid[pos].isWhite = true;
-                        grid[pos].char = word[i];
-                        if (i === 0) grid[pos].number = item.nomor.toString();
+                      const r = isHorizontal ? row : row + i;
+                      const c = isHorizontal ? col + i : col;
+                      if (r >= size || c >= size) return false;
+                      const pos = r * size + c;
+                      const cell = grid[pos];
+
+                      if (cell.isWhite) {
+                        if (cell.char !== word[i]) return false;
+                      } else {
+                        if (isHorizontal) {
+                          if (r > 0 && grid[(r - 1) * size + c].isWhite) return false;
+                          if (r < size - 1 && grid[(r + 1) * size + c].isWhite) return false;
+                        } else {
+                          if (c > 0 && grid[r * size + (c - 1)].isWhite) return false;
+                          if (c < size - 1 && grid[r * size + (c + 1)].isWhite) return false;
+                        }
+                      }
+                    }
+                    return true;
+                  };
+
+                  const allWords = [
+                    ...mendatar.map(w => ({ ...w, isHorizontal: true })),
+                    ...menurun.map(w => ({ ...w, isHorizontal: false }))
+                  ].sort((a, b) => b.jawaban.length - a.jawaban.length);
+
+                  const placedWords: any[] = [];
+                  const unplacedWords = [...allWords];
+
+                  // 1. Place first word in the middle
+                  if (unplacedWords.length > 0) {
+                    const first = unplacedWords.shift()!;
+                    const r = Math.floor(size / 2);
+                    const c = Math.max(0, Math.floor((size - first.jawaban.length) / 2));
+                    placeWord(first, r, c, first.isHorizontal);
+                    placedWords.push({ ...first, row: r, col: c });
+                  }
+
+                  // 2. Iteratively place words by intersecting
+                  let changed = true;
+                  while (changed && unplacedWords.length > 0) {
+                    changed = false;
+                    for (let i = 0; i < unplacedWords.length; i++) {
+                      const wordObj = unplacedWords[i];
+                      const word = (wordObj.jawaban || '').toUpperCase();
+                      let bestPos = null;
+
+                      for (const placed of placedWords) {
+                        for (let j = 0; j < placed.jawaban.length; j++) {
+                          for (let k = 0; k < word.length; k++) {
+                            if (placed.jawaban[j].toUpperCase() === word[k]) {
+                              const r = placed.isHorizontal ? placed.row - k : placed.row + j;
+                              const c = placed.isHorizontal ? placed.col + j : placed.col - k;
+                              const isH = !placed.isHorizontal;
+                              
+                              if (r >= 0 && c >= 0 && canPlace(word, r, c, isH)) {
+                                bestPos = { r, c, isH };
+                                break;
+                              }
+                            }
+                          }
+                          if (bestPos) break;
+                        }
+                        if (bestPos) break;
+                      }
+
+                      if (bestPos) {
+                        placeWord(wordObj, bestPos.r, bestPos.c, bestPos.isH);
+                        placedWords.push({ ...wordObj, row: bestPos.r, col: bestPos.c, isHorizontal: bestPos.isH });
+                        unplacedWords.splice(i, 1);
+                        changed = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  // 3. Place remaining words in free spaces
+                  unplacedWords.forEach(wordObj => {
+                    const word = (wordObj.jawaban || '').toUpperCase();
+                    let placed = false;
+                    for (let r = 0; r < size && !placed; r += 2) {
+                      for (let c = 0; c < size - word.length && !placed; c++) {
+                        if (canPlace(word, r, c, true)) {
+                          placeWord(wordObj, r, c, true);
+                          placed = true;
+                        }
                       }
                     }
                   });
@@ -481,16 +570,16 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`w-6 h-6 border ${!cell.isWhite ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[8px] font-bold text-slate-800 relative`}
+                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
-                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[6px] leading-none">{cell.number}</span>}
-                      {cell.isWhite && ttsMode === 'guru' && <span>{cell.char}</span>}
+                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[5px] leading-none z-10">{cell.number}</span>}
+                      {cell.isWhite && ttsMode === 'guru' && <span className="z-0">{cell.char}</span>}
                     </div>
                   ));
                 })()}
               </div>
-              <p className="text-xs text-slate-500 italic text-center">Kotak di atas telah disinkronkan secara otomatis dengan jawaban yang tersedia.</p>
+              <p className="text-[10px] text-slate-500 italic text-center leading-tight">Kotak di atas telah disinkronkan secara otomatis dengan algoritma cerdas untuk memastikan akurasi jawaban.</p>
             </div>
 
             {/* Pertanyaan TTS */}

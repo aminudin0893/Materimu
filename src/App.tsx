@@ -298,7 +298,7 @@ export default function App() {
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
           12. ${numQuestions} Soal PG + Kunci. 
-          13. Teka-Teki Silang (TTS) HARUS berjumlah 10 pertanyaan (5 mendatar & 5 menurun) yang relevan dengan materi.
+          13. Teka-Teki Silang (TTS) HARUS berjumlah 10 pertanyaan (5 mendatar & 5 menurun) yang relevan dengan materi. PENTING: Usahakan jawaban Mendatar dan Menurun memiliki setidaknya satu huruf yang sama agar dapat saling bersilangan (intersect) dalam kotak TTS.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
@@ -450,6 +450,7 @@ export default function App() {
           Buatlah Teka-Teki Silang (TTS) yang relevan dengan materi "${targetTopic}".
           JUMLAH PERTANYAAN HARUS TEPAT ${ttsNumQuestions}. 
           Bagi menjadi Mendatar dan Menurun secara seimbang (misal: jika 10, maka 5 mendatar & 5 menurun).
+          PENTING: Usahakan jawaban Mendatar dan Menurun memiliki setidaknya satu huruf yang sama agar dapat saling bersilangan (intersect) dalam kotak TTS.
           KELUARKAN HANYA JSON VALID.`,
           responseMimeType: "application/json",
           responseSchema: {
