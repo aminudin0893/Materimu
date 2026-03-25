@@ -294,7 +294,7 @@ export default function App() {
           10. LKPD. 
           11. Tugas Individu & Kelompok. 
           12. ${numQuestions} Soal PG + Kunci. 
-          13. Teka-Teki Silang (TTS) minimal 5 kata (mendatar & menurun) yang relevan dengan materi.
+          13. Teka-Teki Silang (TTS) HARUS berjumlah 10 pertanyaan (5 mendatar & 5 menurun) yang relevan dengan materi.
           14. Instrumen Penilaian rinci.
           15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
