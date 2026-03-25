@@ -40,6 +40,10 @@ export default function App() {
   const [expandedSubtopics, setExpandedSubtopics] = useState<number[]>([]); 
   const [expandAll, setExpandAll] = useState(false);
   const [numQuestions, setNumQuestions] = useState(5);
+  const [ttsTopic, setTtsTopic] = useState('');
+  const [ttsNumQuestions, setTtsNumQuestions] = useState(10);
+  const [ttsMode, setTtsMode] = useState<'guru' | 'siswa'>('siswa');
+  const [isTtsLoading, setIsTtsLoading] = useState(false);
   const [requestHistory, setRequestHistory] = useState<number[]>([]);
   const [customApiKey, setCustomApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
@@ -420,6 +424,59 @@ export default function App() {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateTTS = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const targetTopic = ttsTopic || topic;
+    if (!targetTopic.trim()) { setError('Silakan masukkan judul materi untuk TTS.'); return; }
+
+    setIsTtsLoading(true); setError(''); 
+    const apiKey = customApiKey || process.env.GEMINI_API_KEY!;
+    if (!apiKey) {
+      setError('API Key Gemini tidak ditemukan.');
+      setIsTtsLoading(false);
+      return;
+    }
+    const ai = new GoogleGenAI({ apiKey });
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Buatkan Teka-Teki Silang (TTS) untuk materi: "${targetTopic}" tingkat ${kelas}.`,
+        config: {
+          systemInstruction: `Kamu adalah Guru Ahli pembuat media pembelajaran. 
+          Buatlah Teka-Teki Silang (TTS) yang relevan dengan materi "${targetTopic}".
+          JUMLAH PERTANYAAN HARUS TEPAT ${ttsNumQuestions}. 
+          Bagi menjadi Mendatar dan Menurun secara seimbang (misal: jika 10, maka 5 mendatar & 5 menurun).
+          KELUARKAN HANYA JSON VALID.`,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              tekaTekiSilang: {
+                type: "object",
+                properties: {
+                  mendatar: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } },
+                  menurun: { type: "array", items: { type: "object", properties: { nomor: { type: "integer" }, pertanyaan: { type: "string" }, jawaban: { type: "string" } } } }
+                }
+              }
+            },
+            required: ["tekaTekiSilang"]
+          }
+        }
+      });
+
+      const parsed = JSON.parse(response.text);
+      setResult((prev: any) => ({
+        ...prev,
+        tekaTekiSilang: parsed.tekaTekiSilang
+      }));
+    } catch (err: any) {
+      setError('Gagal generate TTS: ' + err.message);
+    } finally {
+      setIsTtsLoading(false);
     }
   };
 
@@ -1205,6 +1262,14 @@ export default function App() {
                 expandedSubtopics={expandedSubtopics}
                 expandAll={expandAll}
                 toggleAccordion={toggleAccordion}
+                ttsTopic={ttsTopic}
+                setTtsTopic={setTtsTopic}
+                ttsNumQuestions={ttsNumQuestions}
+                setTtsNumQuestions={setTtsNumQuestions}
+                ttsMode={ttsMode}
+                setTtsMode={setTtsMode}
+                handleGenerateTTS={handleGenerateTTS}
+                isTtsLoading={isTtsLoading}
               />
             )}
           </div>

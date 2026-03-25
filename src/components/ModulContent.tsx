@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown, Grid 
+  Layers, Target, Clock, Lightbulb, BookText, FileText, User, Users, ListChecks, ClipboardCheck, Sun, Heart, ChevronUp, ChevronDown, Grid, Sparkles, Loader2 
 } from 'lucide-react';
 
 interface ModulContentProps {
@@ -16,11 +16,21 @@ interface ModulContentProps {
   expandedSubtopics: number[];
   expandAll: boolean;
   toggleAccordion: (index: number) => void;
+  ttsTopic: string;
+  setTtsTopic: (val: string) => void;
+  ttsNumQuestions: number;
+  setTtsNumQuestions: (val: number) => void;
+  ttsMode: 'guru' | 'siswa';
+  setTtsMode: (val: 'guru' | 'siswa') => void;
+  handleGenerateTTS: (e: React.FormEvent) => void;
+  isTtsLoading: boolean;
 }
 
 export const ModulContent: React.FC<ModulContentProps> = ({
   result, subject, kelas, semester, tahunAjaran, namaPenyusun, alokasiWaktu,
-  isExportingMode, displayTarget, expandedSubtopics, expandAll, toggleAccordion
+  isExportingMode, displayTarget, expandedSubtopics, expandAll, toggleAccordion,
+  ttsTopic, setTtsTopic, ttsNumQuestions, setTtsNumQuestions, ttsMode, setTtsMode,
+  handleGenerateTTS, isTtsLoading
 }) => {
   const formatText = (text: string) => {
     if (!text) return null;
@@ -350,42 +360,137 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       {result.tekaTekiSilang && (shouldRender('all') || shouldRender('tts')) && (
         <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
           {displayTarget === 'tts' && <IdentitasIndividu />}
-          <div className="flex items-center gap-2 mb-6 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
-            <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
-            <h3 className="text-lg font-bold text-slate-800">I. Teka-Teki Silang (TTS)</h3>
+          <div className="flex items-center justify-between mb-6 no-print" style={{ pageBreakAfter: 'avoid' }}>
+            <div className="flex items-center gap-2 text-emerald-600">
+              <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
+              <h3 className="text-lg font-bold text-slate-800">I. Teka-Teki Silang (TTS)</h3>
+            </div>
+            
+            {!isExportingMode && displayTarget === 'tts' && (
+              <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <button 
+                  onClick={() => setTtsMode('siswa')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'siswa' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Mode Siswa
+                </button>
+                <button 
+                  onClick={() => setTtsMode('guru')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'guru' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Mode Guru
+                </button>
+              </div>
+            )}
           </div>
+
+          {!isExportingMode && displayTarget === 'tts' && (
+            <div className="mb-8 p-6 bg-emerald-50 border border-emerald-100 rounded-2xl no-print">
+              <form onSubmit={handleGenerateTTS} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider ml-1">Judul Materi TTS</label>
+                    <input 
+                      type="text" 
+                      value={ttsTopic || result.judulMateri} 
+                      onChange={e => setTtsTopic(e.target.value)} 
+                      placeholder="Masukkan judul materi..."
+                      className="w-full px-4 py-2 bg-white border border-emerald-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider ml-1">Jumlah Soal</label>
+                    <input 
+                      type="number" 
+                      min="4" 
+                      max="20" 
+                      value={ttsNumQuestions} 
+                      onChange={e => setTtsNumQuestions(parseInt(e.target.value) || 10)} 
+                      className="w-full px-4 py-2 bg-white border border-emerald-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isTtsLoading}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+                >
+                  {isTtsLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} /> 
+                      <span>Sedang Generate TTS...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> 
+                      Generate Ulang TTS Otomatis
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {displayTarget === 'all' && (
+            <div className="flex items-center gap-2 mb-6 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
+              <Grid size={20} />
+              <h3 className="text-lg font-bold text-slate-800">I. Teka-Teki Silang (TTS)</h3>
+            </div>
+          )}
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Grid TTS (Placeholder Visual) */}
+            {/* Grid TTS (Dynamic Generation) */}
             <div className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl" style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
-              <div className="grid grid-cols-10 gap-1 mb-4">
-                {Array.from({ length: 100 }).map((_, i) => {
-                  const row = Math.floor(i / 10);
-                  const col = i % 10;
+              <div className="grid grid-cols-12 gap-1 mb-4">
+                {(() => {
+                  const size = 12;
+                  const grid = Array(size * size).fill(null).map(() => ({ char: '', number: '', isWhite: false }));
                   
-                  // Logic for a 10x10 crossword grid with 5 intersecting pairs
-                  // Mendatar paths at rows 0, 2, 4, 6, 8
-                  const isMendatar = (row % 4 === 0 && col < 8) || (row % 4 === 2 && col > 1);
-                  // Menurun paths at cols 0, 2, 4, 6, 8
-                  const isMenurun = (col % 4 === 0 && row < 8) || (col % 4 === 2 && row > 1);
-                  const isWhite = isMendatar || isMenurun;
+                  const { mendatar = [], menurun = [] } = result.tekaTekiSilang;
                   
-                  // Shared start indices for Mendatar & Menurun 1-5
-                  const startIndices = [0, 22, 44, 66, 88];
-                  const number = startIndices.includes(i) ? (startIndices.indexOf(i) + 1).toString() : '';
+                  // Place Mendatar
+                  mendatar.forEach((item: any, idx: number) => {
+                    const row = idx * 2 + 1;
+                    const colStart = 1;
+                    const word = (item.jawaban || '').toUpperCase();
+                    for (let i = 0; i < word.length; i++) {
+                      const pos = row * size + (colStart + i);
+                      if (pos < size * size) {
+                        grid[pos].isWhite = true;
+                        grid[pos].char = word[i];
+                        if (i === 0) grid[pos].number = item.nomor.toString();
+                      }
+                    }
+                  });
                   
-                  return (
+                  // Place Menurun
+                  menurun.forEach((item: any, idx: number) => {
+                    const col = idx * 2 + 1;
+                    const rowStart = 1;
+                    const word = (item.jawaban || '').toUpperCase();
+                    for (let i = 0; i < word.length; i++) {
+                      const pos = (rowStart + i) * size + col;
+                      if (pos < size * size) {
+                        grid[pos].isWhite = true;
+                        grid[pos].char = word[i];
+                        if (i === 0) grid[pos].number = item.nomor.toString();
+                      }
+                    }
+                  });
+
+                  return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`w-6 h-6 border ${!isWhite ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[8px] font-bold text-slate-800`}
+                      className={`w-6 h-6 border ${!cell.isWhite ? 'bg-slate-800 border-slate-800' : 'bg-white border-slate-300'} rounded-sm flex items-center justify-center text-[8px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
-                      {number}
+                      {cell.number && <span className="absolute top-0.5 left-0.5 text-[6px] leading-none">{cell.number}</span>}
+                      {cell.isWhite && ttsMode === 'guru' && <span>{cell.char}</span>}
                     </div>
-                  );
-                })}
+                  ));
+                })()}
               </div>
-              <p className="text-xs text-slate-500 italic text-center">Visualisasi kotak TTS di atas adalah ilustrasi. Silakan gunakan 10 pertanyaan (5 mendatar & 5 menurun) di bawah untuk mengisi kotak yang tersedia.</p>
+              <p className="text-xs text-slate-500 italic text-center">Kotak di atas telah disinkronkan secara otomatis dengan jawaban yang tersedia.</p>
             </div>
 
             {/* Pertanyaan TTS */}
@@ -400,8 +505,8 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       <span className="font-bold text-emerald-600 shrink-0 w-5">{item.nomor}.</span>
                       <div className="flex flex-col">
                         <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {displayTarget === 'tts' && (
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
+                        {(displayTarget === 'tts' && ttsMode === 'guru') && (
+                          <span className="text-[10px] font-bold text-emerald-600 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
                         )}
                       </div>
                     </div>
@@ -419,8 +524,8 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       <span className="font-bold text-blue-600 shrink-0 w-5">{item.nomor}.</span>
                       <div className="flex flex-col">
                         <span className="text-slate-700 leading-relaxed">{item.pertanyaan}</span>
-                        {displayTarget === 'tts' && (
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
+                        {(displayTarget === 'tts' && ttsMode === 'guru') && (
+                          <span className="text-[10px] font-bold text-blue-600 mt-1 uppercase tracking-wider">Jawaban: {item.jawaban}</span>
                         )}
                       </div>
                     </div>
