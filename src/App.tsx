@@ -514,15 +514,13 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
 
-    // Safety timeout to prevent hanging (90 seconds)
+    // Safety timeout to prevent hanging (120 seconds for very large docs)
     const safetyTimeout = setTimeout(() => {
-      if (setIsPdfLoading) {
-        setIsPdfLoading(false);
-        setIsExportingMode(false);
-        setExpandAll(false);
-        setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar untuk diproses secara otomatis. Silakan gunakan fitur 'Cetak Langsung (Print)' untuk hasil yang lebih stabil.");
-      }
-    }, 90000);
+      setIsPdfLoading(false);
+      setIsExportingMode(false);
+      setExpandAll(false);
+      setError("Proses penyimpanan memakan waktu terlalu lama. Dokumen mungkin terlalu besar untuk diproses secara otomatis. Silakan gunakan fitur 'Cetak Langsung (Print)' untuk hasil yang lebih stabil.");
+    }, 120000);
 
     // Wait for DOM update to ensure everything is rendered
     setTimeout(() => {
@@ -533,11 +531,19 @@ export default function App() {
           throw new Error("Gagal menemukan konten untuk disimpan.");
         }
 
-        // Force a specific width for PDF generation to ensure layout consistency
+        // Force a specific width and ensure visibility for PDF generation
         const originalWidth = element.style.width;
         const originalMaxWidth = element.style.maxWidth;
-        element.style.width = '794px'; // A4 width at 96dpi
-        element.style.maxWidth = '794px';
+        const originalOverflow = element.style.overflow;
+        const originalPadding = element.style.padding;
+        const originalBackground = element.style.background;
+        
+        element.style.width = '800px'; 
+        element.style.maxWidth = '800px';
+        element.style.overflow = 'visible';
+        element.style.padding = '20px';
+        element.style.background = '#ffffff';
+        
         window.scrollTo(0, 0);
 
         let prefix = "Modul_Ajar";
@@ -552,30 +558,34 @@ export default function App() {
         const fileName = `${prefix}_${subjectSafeName}_${result.judulMateri.replace(/\s+/g, '_')}.pdf`;
 
         const elementHeight = element.scrollHeight;
-        let dynamicScale = 1.2; // Start with a lower scale for better stability
-        if (elementHeight > 5000) dynamicScale = 1.0;
-        if (elementHeight > 10000) dynamicScale = 0.8;
-        if (elementHeight > 15000) dynamicScale = 0.5; // Reduced further
-        if (elementHeight > 20000) dynamicScale = 0.4; // Added tier for extremely large docs
+        let dynamicScale = 1.5; 
+        if (elementHeight > 5000) dynamicScale = 1.2;
+        if (elementHeight > 10000) dynamicScale = 1.0;
+        if (elementHeight > 15000) dynamicScale = 0.8;
+        if (elementHeight > 20000) dynamicScale = 0.6;
 
         const opt = {
           margin: [10, 10, 10, 10], 
           filename: fileName,
-          image: { type: 'jpeg', quality: 0.80 }, // Reduced quality for memory
+          image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { 
             scale: dynamicScale, 
             useCORS: true, 
             logging: false,
             backgroundColor: '#ffffff',
             removeContainer: true,
+            imageTimeout: 0,
+            allowTaint: true,
             onclone: (clonedDoc: Document) => {
-              const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
-              const clonedElement = clonedDoc.getElementById(targetId);
+              const clonedTargetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+              const clonedElement = clonedDoc.getElementById(clonedTargetId);
               if (clonedElement) {
                 // Remove any elements that shouldn't be in the PDF
-                const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
+                const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
                 toRemove.forEach(el => el.remove());
                 clonedElement.style.padding = '20px';
+                clonedElement.style.width = '800px';
+                clonedElement.style.maxWidth = '800px';
               }
             }
           },
@@ -583,27 +593,33 @@ export default function App() {
           pagebreak: { mode: ['css', 'legacy'], before: '.page-break' } 
         };
 
-        // Execute html2pdf
-        html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf: any) => {
-          pdf.save();
+        // Execute html2pdf using the more robust .save() method
+        html2pdf().set(opt).from(element).save().then(() => {
           clearTimeout(safetyTimeout);
           setIsPdfLoading(false);
           setExpandAll(false);
           setIsExportingMode(false);
           setExportTarget('all');
+          // Reset styles
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
+          element.style.overflow = originalOverflow;
+          element.style.padding = originalPadding;
+          element.style.background = originalBackground;
         })
         .catch((err: any) => {
           clearTimeout(safetyTimeout);
           console.error("Error creating PDF", err);
-          setError("Gagal membuat PDF. Dokumen mungkin terlalu besar. Silakan gunakan fitur 'Cetak Langsung (Print)' sebagai alternatif.");
+          setError("Gagal membuat PDF. Silakan coba lagi atau gunakan fitur 'Cetak Langsung (Print)'.");
           setIsPdfLoading(false);
           setExpandAll(false);
           setIsExportingMode(false);
           setExportTarget('all');
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
+          element.style.overflow = originalOverflow;
+          element.style.padding = originalPadding;
+          element.style.background = originalBackground;
         });
       } catch (e: any) {
         clearTimeout(safetyTimeout);
@@ -614,7 +630,7 @@ export default function App() {
         setIsExportingMode(false);
         setExportTarget('all');
       }
-    }, 2500); 
+    }, 3000); 
   };
 
   const handleExportJPG = (target: string) => {
@@ -633,39 +649,35 @@ export default function App() {
     if (target === 'all') setExpandAll(true); 
     setIsExportingMode(true); 
     
-    // Safety timeout to prevent hanging (90 seconds)
+    // Safety timeout to prevent hanging (120 seconds)
     const safetyTimeout = setTimeout(() => {
-      if (setIsJpgLoading) {
-        setIsJpgLoading(false);
-        setIsExportingMode(false);
-        setExpandAll(false);
-        setError("Proses penyimpanan gambar memakan waktu terlalu lama. Dokumen mungkin terlalu besar.");
-      }
-    }, 90000);
+      setIsJpgLoading(false);
+      setIsExportingMode(false);
+      setExpandAll(false);
+      setError("Proses penyimpanan gambar memakan waktu terlalu lama. Dokumen mungkin terlalu besar.");
+    }, 120000);
 
     setTimeout(() => {
-      const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
-      const element = document.getElementById(targetId);
-      if (!element) {
-        clearTimeout(safetyTimeout);
-        setError("Gagal menemukan konten untuk disimpan.");
-        setIsJpgLoading(false);
-        setIsExportingMode(false);
-        return;
-      }
-
-      const originalWidth = element.style.width;
-      const originalMaxWidth = element.style.maxWidth;
-      const originalPadding = element.style.padding;
-      const originalBackground = element.style.background;
-
       try {
+        const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+        const element = document.getElementById(targetId);
+        if (!element) {
+          throw new Error("Gagal menemukan konten untuk disimpan.");
+        }
+
+        const originalWidth = element.style.width;
+        const originalMaxWidth = element.style.maxWidth;
+        const originalPadding = element.style.padding;
+        const originalBackground = element.style.background;
+        const originalOverflow = element.style.overflow;
+
         window.scrollTo(0, 0);
         
-        element.style.width = '800px';
-        element.style.maxWidth = '800px';
+        element.style.width = '1000px';
+        element.style.maxWidth = '1000px';
         element.style.padding = '30px 40px'; 
         element.style.background = '#ffffff';
+        element.style.overflow = 'visible';
         
         let prefix = "Modul_Ajar";
         if (target === 'lkpd') prefix = "LKPD";
@@ -678,11 +690,11 @@ export default function App() {
         const subjectSafeName = (result.generatedSubject || subject).replace(/\s+/g, '_');
 
         const elementHeight = element.scrollHeight;
-        let dynamicScale = 1.2;
-        if (elementHeight > 5000) dynamicScale = 1.0;
-        if (elementHeight > 10000) dynamicScale = 0.7; // Lower scale for very long documents
-        if (elementHeight > 15000) dynamicScale = 0.5; // Extreme reduction for stability
-        if (elementHeight > 20000) dynamicScale = 0.4; // Added tier
+        let dynamicScale = 2.0;
+        if (elementHeight > 5000) dynamicScale = 1.5;
+        if (elementHeight > 10000) dynamicScale = 1.0;
+        if (elementHeight > 15000) dynamicScale = 0.8;
+        if (elementHeight > 20000) dynamicScale = 0.6;
 
         // Use html2canvas from the window object (loaded via html2pdf bundle)
         const html2canvasLib = (window as any).html2canvas;
@@ -690,16 +702,21 @@ export default function App() {
         html2canvasLib(element, {
           scale: dynamicScale,
           useCORS: true,
-          windowWidth: 900,
+          windowWidth: 1100,
           logging: false,
           backgroundColor: '#ffffff',
           scrollY: 0,
+          imageTimeout: 0,
+          allowTaint: true,
           onclone: (clonedDoc: Document) => {
-            const targetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
-            const clonedElement = clonedDoc.getElementById(targetId);
+            const clonedTargetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
+            const clonedElement = clonedDoc.getElementById(clonedTargetId);
             if (clonedElement) {
-              const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude');
+              const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
               toRemove.forEach(el => el.remove());
+              clonedElement.style.padding = '30px';
+              clonedElement.style.width = '1000px';
+              clonedElement.style.maxWidth = '1000px';
             }
           }
         }).then((canvas: HTMLCanvasElement) => {
@@ -724,6 +741,12 @@ export default function App() {
             setExpandAll(false);
             setIsExportingMode(false);
             setExportTarget('all');
+            // Reset styles
+            element.style.width = originalWidth;
+            element.style.maxWidth = originalMaxWidth;
+            element.style.padding = originalPadding;
+            element.style.background = originalBackground;
+            element.style.overflow = originalOverflow;
           }, 'image/jpeg', 0.9);
           
         }).catch((err: any) => {
@@ -734,11 +757,11 @@ export default function App() {
           setExpandAll(false);
           setIsExportingMode(false);
           setExportTarget('all');
-        }).finally(() => {
           element.style.width = originalWidth;
           element.style.maxWidth = originalMaxWidth;
           element.style.padding = originalPadding;
           element.style.background = originalBackground;
+          element.style.overflow = originalOverflow;
         });
       } catch (e) {
         clearTimeout(safetyTimeout);
@@ -746,12 +769,9 @@ export default function App() {
         setError("Terjadi kesalahan sistem saat memproses gambar.");
         setIsJpgLoading(false);
         setIsExportingMode(false);
-        element.style.width = originalWidth;
-        element.style.maxWidth = originalMaxWidth;
-        element.style.padding = originalPadding;
-        element.style.background = originalBackground;
+        setExpandAll(false);
       }
-    }, 2500);
+    }, 3000);
   };
 
   const handleCopy = () => {
