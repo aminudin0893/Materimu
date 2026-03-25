@@ -301,7 +301,11 @@ export default function App() {
           12. ${numQuestions} Soal PG + Kunci. 
           13. Teka-Teki Silang (TTS) HARUS berjumlah 10 pertanyaan (5 mendatar & 5 menurun) yang relevan dengan materi. PENTING: Usahakan jawaban Mendatar dan Menurun memiliki setidaknya satu huruf yang sama agar dapat saling bersilangan (intersect) dalam kotak TTS.
           14. Instrumen Penilaian rinci.
-          15. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
+          15. Pada bagian 'modelPembelajaran', berikan rekomendasi model pembelajaran yang canggih, inovatif, dan profesional (seperti Project Based Learning, Problem Based Learning, Discovery Learning, Inquiry Learning, atau Flipped Classroom) yang paling relevan dengan materi. Struktur jawaban WAJIB: 
+              - Nama Model Pembelajaran
+              - Alasan Pemilihan (Mengapa model ini efektif untuk topik ini)
+              - Sintaks/Langkah-langkah Inti Model tersebut.
+          16. KELUARKAN HANYA JSON VALID. JANGAN ADA TEKS LAIN DI LUAR JSON. 
           PENTING: Pastikan seluruh konten lengkap namun tetap efisien dalam penggunaan kata agar tidak terputus di tengah jalan.`,
           responseMimeType: "application/json",
           maxOutputTokens: 8192,

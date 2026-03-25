@@ -27,7 +27,7 @@ export const DAFTAR_MAPEL = [
 export const initialData = {
   generatedSubject: "Pendidikan Agama Islam",
   judulMateri: "Puasa Ramadhan",
-  modelPembelajaran: "Problem Based Learning (PBL) dan Discovery Learning.\n\nPembelajaran difokuskan pada pemecahan studi kasus fikih puasa sehari-hari agar siswa menemukan sendiri hukum dan hikmahnya secara kontekstual. Guru bertindak sebagai fasilitator yang mengarahkan diskusi.",
+  modelPembelajaran: "Model: Problem Based Learning (PBL)\n\nAlasan: Model ini dipilih karena materi Puasa Ramadhan sangat erat kaitannya dengan problematika fikih praktis sehari-hari. Dengan PBL, siswa tidak hanya menghafal teori, tetapi belajar memecahkan kasus nyata (seperti hukum lupa makan atau menyikat gigi saat puasa), sehingga pemahaman menjadi lebih mendalam dan kontekstual.\n\nSintaks/Langkah:\n1. Orientasi pada masalah (Penyajian kasus fikih).\n2. Mengorganisasi siswa untuk belajar (Pembagian kelompok).\n3. Membimbing penyelidikan (Diskusi & literasi kitab/buku).\n4. Mengembangkan & menyajikan hasil (Presentasi solusi).\n5. Menganalisis & mengevaluasi proses (Penguatan oleh guru).",
   pendekatanKhusus: "Materi puasa diajarkan bukan sekadar sebagai kewajiban menahan lapar yang membebani, melainkan sebagai bentuk 'Cinta Allah' agar organ tubuh kita beristirahat dan menjadi lebih sehat.\n\nSelain itu, puasa diajarkan sebagai sarana menumbuhkan empati dan welas asih (kasih sayang) kepada kaum fakir miskin yang sering kelaparan, sehingga melahirkan karakter dermawan dan peduli terhadap sesama manusia.",
   tp: [
     "Peserta didik mampu menjelaskan pengertian puasa Ramadhan secara bahasa dan istilah dengan benar sesuai kaidah fikih.",

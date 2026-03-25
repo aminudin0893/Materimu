@@ -174,11 +174,26 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       {shouldRender('all') && (
         <div className={`grid md:grid-cols-2 gap-6 ${isExportingMode || displayTarget !== 'all' ? 'border-b border-slate-300 pb-6 mb-6' : 'p-6 md:p-8 bg-rose-50/30'}`} style={{ pageBreakInside: 'avoid' }}>
           <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-300' : 'bg-white border border-slate-200 shadow-sm'}`}>
-            <div className="flex items-center gap-2 mb-3 text-indigo-700">
-              <Layers size={20} />
-              <h3 className="font-bold text-lg text-slate-800">A. Model Pembelajaran</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-indigo-700">
+                <Layers size={20} />
+                <h3 className="font-bold text-lg text-slate-800">A. Model Pembelajaran</h3>
+              </div>
+              {!isExportingMode && (
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full border border-indigo-100 uppercase tracking-tighter">
+                  <Sparkles size={10} /> Rekomendasi AI
+                </span>
+              )}
             </div>
-            <div className="text-slate-700">{formatText(result.modelPembelajaran)}</div>
+            <div className="text-slate-700 space-y-3">
+              {result.modelPembelajaran && result.modelPembelajaran.includes('\n') ? (
+                formatText(result.modelPembelajaran)
+              ) : (
+                <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100/50 italic text-sm">
+                  {result.modelPembelajaran}
+                </div>
+              )}
+            </div>
           </div>
           <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-300' : isIsmuba ? 'bg-white border border-sky-200 shadow-sm' : 'bg-white border border-rose-200 shadow-sm'}`}>
             <div className={`flex items-center gap-2 mb-3 ${isIsmuba ? 'text-sky-600' : 'text-rose-600'}`}>
