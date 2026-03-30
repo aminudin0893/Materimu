@@ -24,13 +24,14 @@ interface ModulContentProps {
   setTtsMode: (val: 'guru' | 'siswa') => void;
   handleGenerateTTS: (e: React.FormEvent) => void;
   isTtsLoading: boolean;
+  logo?: string | null;
 }
 
 export const ModulContent: React.FC<ModulContentProps> = ({
   result, subject, kelas, semester, tahunAjaran, namaPenyusun, alokasiWaktu,
   isExportingMode, displayTarget, expandedSubtopics, expandAll, toggleAccordion,
   ttsTopic, setTtsTopic, ttsNumQuestions, setTtsNumQuestions, ttsMode, setTtsMode,
-  handleGenerateTTS, isTtsLoading
+  handleGenerateTTS, isTtsLoading, logo
 }) => {
   const formatText = (text: string) => {
     if (!text) return null;
@@ -132,11 +133,43 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       
       {/* KOP SEKOLAH */}
       {(isExportingMode || displayTarget !== 'all') && (
-        <div className="text-center pt-2 pb-3 mb-6 border-b-[3px] border-slate-800 border-double" style={{ pageBreakAfter: 'avoid' }}>
-          <h2 className="text-xl font-extrabold uppercase tracking-widest text-slate-900 mb-1">
-            SMP MUHAMMADIYAH 1 PROBOLINGGO
-          </h2>
-          <h1 className="text-lg font-bold uppercase tracking-widest text-slate-800 leading-tight mt-3">
+        <div className="pt-2 pb-3 mb-6 border-b-[4px] border-slate-800 border-double flex items-center gap-6" style={{ pageBreakAfter: 'avoid' }}>
+          {logo ? (
+            <div className="w-24 h-24 shrink-0 flex items-center justify-center">
+              <img src={logo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
+            </div>
+          ) : (
+            <div className="w-24 h-24 shrink-0 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-[10px] text-slate-400 text-center p-2">
+              Logo Sekolah
+            </div>
+          )}
+          <div className="flex-1 text-center pr-24">
+            <h2 className="text-[14px] font-bold uppercase text-slate-900 leading-tight">
+              MAJELIS PENDIDIKAN DASAR MENENGAH DAN PENDIDIKAN NON FORMAL
+            </h2>
+            <h2 className="text-[14px] font-bold uppercase text-slate-900 leading-tight">
+              PIMPINAN DAERAH MUHAMMADIYAH KOTA PROBOLINGGO
+            </h2>
+            <h1 className="text-[20px] font-black uppercase text-slate-900 leading-tight my-1">
+              SMP MUHAMMADIYAH 1 KOTA PROBOLINGGO
+            </h1>
+            <h2 className="text-[14px] font-bold uppercase text-slate-900 leading-tight">
+              TERAKREDITASI A
+            </h2>
+            <p className="text-[11px] text-slate-800 mt-1">
+              Jl. Mayjend Panjaitan 73 Kota Probolinggo Email: <span className="text-blue-600 underline">smp_muh.prob@yahoo.co.id</span>
+            </p>
+            <p className="text-[11px] text-slate-800">
+              Telp/fax. 0335-422307 Website: smpmusapro.sch.id
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* JUDUL DOKUMEN (DIBAWAH KOP) */}
+      {(isExportingMode || displayTarget !== 'all') && (
+        <div className="text-center mb-6">
+          <h1 className="text-lg font-bold uppercase tracking-widest text-slate-800 leading-tight">
             {displayTarget === 'all' && `MODUL AJAR ${(result.generatedSubject || subject).toUpperCase()}`}
             {displayTarget === 'lkpd' && `LEMBAR KERJA PESERTA DIDIK (LKPD)`}
             {displayTarget === 'penugasan_individu' && `LEMBAR PENUGASAN MANDIRI`}

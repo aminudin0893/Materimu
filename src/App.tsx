@@ -18,6 +18,7 @@ export default function App() {
   const [semester, setSemester] = useState('Ganjil');
   const [tahunAjaran, setTahunAjaran] = useState('2024/2025');
   const [namaPenyusun, setNamaPenyusun] = useState('Aminudin, S.Pd.');
+  const [logo, setLogo] = useState<string | null>(null);
   
   const [showAdvanced, setShowAdvanced] = useState(false); 
   const [isLoading, setIsLoading] = useState(false);
@@ -142,6 +143,7 @@ export default function App() {
         if (m.alokasiWaktu) setAlokasiWaktu(m.alokasiWaktu);
         if (m.subject) setSubject(m.subject);
         if (m.numQuestions) setNumQuestions(m.numQuestions);
+        if (m.logo) setLogo(m.logo);
       } catch (e) {}
     }
 
@@ -166,9 +168,20 @@ export default function App() {
   }, [customApiKey]);
 
   useEffect(() => {
-    const metadata = { namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions };
+    const metadata = { namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions, logo };
     localStorage.setItem('modul_metadata', JSON.stringify(metadata));
-  }, [namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions]);
+  }, [namaPenyusun, kelas, semester, tahunAjaran, alokasiWaktu, subject, numQuestions, logo]);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (result && result !== initialData) {
@@ -1043,6 +1056,47 @@ export default function App() {
                       className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
                     />
                   </div>
+
+                  <div className="md:col-span-3 pt-2 border-t border-slate-200 mt-2 space-y-3">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1 flex-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Upload Logo Sekolah (KOP)</label>
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                          />
+                          {logo && (
+                            <button 
+                              type="button"
+                              onClick={() => setLogo(null)}
+                              className="text-[10px] font-bold text-rose-500 hover:text-rose-600 underline"
+                            >
+                              Hapus Logo
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <a 
+                          href="https://drive.google.com/file/d/1VvSuJzYatiDrM5-j0yNIDmUjvAGCHGuH/view?pli=1" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                        >
+                          <Download size={14} />
+                          Download Logo Referensi
+                        </a>
+                      </div>
+                    </div>
+                    {logo && (
+                      <div className="p-2 bg-white border border-slate-200 rounded-lg inline-block">
+                        <img src={logo} alt="Logo Preview" className="h-12 w-auto object-contain" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -1318,6 +1372,7 @@ export default function App() {
                 setTtsMode={setTtsMode}
                 handleGenerateTTS={handleGenerateTTS}
                 isTtsLoading={isTtsLoading}
+                logo={logo}
               />
             )}
           </div>
