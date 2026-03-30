@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize2, Minimize2
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize2, Minimize2, Presentation, Printer
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
 import { ModulContent } from './components/ModulContent';
 import { MindMap } from './components/MindMap';
+import { PresentationView } from './components/PresentationView';
 
 export default function App() {
   const [subject, setSubject] = useState('Pendidikan Agama Islam');
@@ -355,7 +356,26 @@ export default function App() {
               },
               pengertian: { type: "string" },
               dalil: { type: "array", items: { type: "object", properties: { sumber: { type: "string" }, teksArab: { type: "string" }, terjemahan: { type: "string" } } } },
-              subTopik: { type: "array", items: { type: "object", properties: { judulSub: { type: "string" }, penjelasan: { type: "string" } } } },
+              subTopik: { 
+                type: "array", 
+                items: { 
+                  type: "object", 
+                  properties: { 
+                    judulSub: { type: "string" }, 
+                    penjelasan: { type: "string" },
+                    subSubTopik: { 
+                      type: "array", 
+                      items: { 
+                        type: "object", 
+                        properties: { 
+                          judul: { type: "string" }, 
+                          deskripsi: { type: "string" } 
+                        } 
+                      } 
+                    }
+                  } 
+                } 
+              },
               lkpd: { type: "object", properties: { judul: { type: "string" }, tujuan: { type: "string" }, langkahKerja: { type: "array", items: { type: "string" } } } },
               tugasIndividu: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
               tugasKelompok: { type: "object", properties: { judul: { type: "string" }, instruksi: { type: "string" } } },
@@ -448,6 +468,11 @@ export default function App() {
         errorMessage = "Kuota API Gemini Anda telah habis atau terlalu banyak permintaan dalam waktu singkat. Silakan tunggu beberapa saat (1-2 menit) atau gunakan API Key lain di menu Pengaturan.";
       }
       
+      // Handle Service Unavailable (503)
+      if (errorMessage.includes('503') || errorMessage.includes('UNAVAILABLE') || errorMessage.includes('high demand')) {
+        errorMessage = "Server Gemini sedang mengalami permintaan yang sangat tinggi (High Demand). Silakan tunggu 1-2 menit dan coba klik tombol Generate kembali.";
+      }
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -502,7 +527,16 @@ export default function App() {
         tekaTekiSilang: parsed.tekaTekiSilang
       }));
     } catch (err: any) {
-      setError('Gagal generate TTS: ' + err.message);
+      console.error("TTS Error:", err);
+      let errorMessage = err.message || 'Gagal menyusun Teka-teki Silang.';
+      
+      if (errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('quota')) {
+        errorMessage = "Kuota API Gemini habis. Silakan tunggu 1-2 menit.";
+      } else if (errorMessage.includes('503') || errorMessage.includes('UNAVAILABLE') || errorMessage.includes('high demand')) {
+        errorMessage = "Server Gemini sedang sibuk (High Demand). Silakan coba lagi dalam 1 menit.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsTtsLoading(false);
     }
@@ -1141,17 +1175,30 @@ export default function App() {
                 </div>
             </form>
             {error && (
-              <div className="mt-3 p-3 bg-red-50 text-red-600 rounded-xl flex items-center justify-between border border-red-100 text-sm animate-in fade-in slide-in-from-top-2">
+              <div className="mt-3 p-3 bg-red-50 text-red-600 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 border border-red-100 text-sm animate-in fade-in slide-in-from-top-2 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <AlertCircle size={16} className="shrink-0" /> 
-                  <p>{error}</p>
+                  <AlertCircle size={18} className="shrink-0 text-red-500" /> 
+                  <p className="leading-relaxed">{error}</p>
                 </div>
-                <button 
-                  onClick={resetAllStates}
-                  className="ml-2 px-3 py-1 bg-white border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"
-                >
-                  Tutup
-                </button>
+                <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                  {(error.includes('High Demand') || error.includes('Kuota')) && (
+                    <button 
+                      onClick={() => {
+                        const form = document.querySelector('form');
+                        if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                      }}
+                      className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm active:scale-95"
+                    >
+                      Coba Lagi
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setError("")}
+                    className="px-3 py-1.5 bg-white border border-red-200 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             )}
           </section>
@@ -1163,6 +1210,7 @@ export default function App() {
               <div className="flex overflow-x-auto gap-2 p-1.5 bg-slate-200/70 rounded-xl shadow-inner">
                 {[
                   { id: 'all', label: 'Semua Modul', icon: <Layers size={16} /> },
+                  { id: 'presentasi', label: 'Presentasi', icon: <Presentation size={16} /> },
                   { id: 'mindmap', label: 'Mind Map', icon: <Share2 size={16} /> },
                   { id: 'lkpd', label: 'Lembar LKPD', icon: <FileText size={16} /> },
                   { id: 'penugasan_individu', label: 'Tugas Individu', icon: <User size={16} /> },
@@ -1195,6 +1243,16 @@ export default function App() {
                   </button>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto relative">
+                  <button 
+                    onClick={() => handlePrint(viewMode)}
+                    className="flex flex-col items-center justify-center px-4 py-1 bg-emerald-600 text-white border border-emerald-700 rounded-lg shadow-sm hover:bg-emerald-700 transition-all active:scale-95"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-sm">
+                      <Printer size={16} /> Cetak Langsung
+                    </div>
+                    <span className="text-[8px] font-medium opacity-80 uppercase tracking-tighter">Stabil & Cepat (Rekomendasi)</span>
+                  </button>
+
                   <button 
                     onClick={() => { setExportType('pdf'); setShowExportModal(true); }} 
                     disabled={isPdfLoading || isJpgLoading} 
@@ -1249,85 +1307,86 @@ export default function App() {
                       onClick={() => exportType === 'pdf' ? handleExportPDF('all') : handleExportJPG('all')}
                       className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
                     >
-                      <span className="font-bold text-slate-700">Modul Ajar Lengkap</span>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-700">Modul Ajar Lengkap</span>
+                        {exportType === 'pdf' && <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Cetak Langsung Tersedia</span>}
+                      </div>
                       <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
                     </button>
 
                     {exportType === 'pdf' && (
-                      <button 
-                        onClick={() => handlePrint('all')}
-                        className="w-full text-left px-4 py-4 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-100 flex items-center justify-between group transition-all"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-bold text-emerald-700">Cetak Langsung (Print)</span>
-                          <span className="text-[10px] text-emerald-600 font-medium">Paling Stabil & Cepat (Rekomendasi)</span>
+                      <div className="grid grid-cols-1 gap-2 border-t border-slate-100 pt-4 mt-2">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-1">Opsi Cetak Langsung (Rekomendasi)</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { id: 'all', label: 'Semua Modul' },
+                            { id: 'lkpd', label: 'LKPD' },
+                            { id: 'tts', label: 'TTS' },
+                            { id: 'evaluasi_tanpa_kunci', label: 'Soal Siswa' },
+                            { id: 'evaluasi_dengan_kunci', label: 'Soal Guru' },
+                            { id: 'penugasan_individu', label: 'Tugas Individu' },
+                            { id: 'penugasan_kelompok', label: 'Tugas Kelompok' },
+                          ].map((item) => (
+                            <button 
+                              key={item.id}
+                              onClick={() => handlePrint(item.id)}
+                              className="flex flex-col items-start p-3 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-100 transition-all group"
+                            >
+                              <span className="font-bold text-emerald-700 text-xs">{item.label}</span>
+                              <span className="text-[9px] text-emerald-600 font-medium">Cetak Langsung</span>
+                            </button>
+                          ))}
                         </div>
-                        <Download className="-rotate-90 text-emerald-400 group-hover:text-emerald-600 transition-colors" size={18} />
-                      </button>
+                      </div>
                     )}
 
-                    <button 
-                      onClick={() => exportType === 'pdf' ? handleExportPDF('mindmap') : handleExportJPG('mindmap')}
-                      className="flex flex-col items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                        <Share2 size={24} />
-                      </div>
-                      <span className="text-sm font-medium text-slate-700">Mind Map</span>
-                    </button>
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <button 
+                        onClick={() => exportType === 'pdf' ? handleExportPDF('mindmap') : handleExportJPG('mindmap')}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                          <Share2 size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Mind Map</span>
+                      </button>
 
-                    <button 
-                      onClick={() => exportType === 'pdf' ? handleExportPDF('lkpd') : handleExportJPG('lkpd')}
-                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
-                    >
-                      <span className="font-bold text-slate-700">Lembar LKPD</span>
-                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
-                    </button>
+                      <button 
+                        onClick={() => exportType === 'pdf' ? handleExportPDF('lkpd') : handleExportJPG('lkpd')}
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                          <FileText size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Lembar LKPD</span>
+                      </button>
+                    </div>
 
                     <button 
                       onClick={() => exportType === 'pdf' ? handleExportPDF('tts') : handleExportJPG('tts')}
-                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                      className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
                     >
-                      <span className="font-bold text-slate-700">Teka-Teki Silang (TTS)</span>
+                      <span className="font-bold text-slate-700 text-sm">Teka-Teki Silang (TTS)</span>
                       <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
                     </button>
 
-                    {exportType === 'pdf' && (
-                      <>
-                        <button 
-                          onClick={() => handleExportPDF('penugasan_individu')}
-                          className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
-                        >
-                          <span className="font-bold text-slate-700">Tugas Individu</span>
-                          <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleExportPDF('penugasan_kelompok')}
-                          className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
-                        >
-                          <span className="font-bold text-slate-700">Tugas Kelompok</span>
-                          <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
-                        </button>
-                      </>
-                    )}
-
-                    <button 
-                      onClick={() => exportType === 'pdf' ? handleExportPDF('evaluasi_tanpa_kunci') : handleExportJPG('evaluasi_tanpa_kunci')}
-                      className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
-                    >
-                      <span className="font-bold text-slate-700">Soal Evaluasi (Siswa)</span>
-                      <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
-                    </button>
-
-                    {exportType === 'pdf' && (
+                    <div className="grid grid-cols-2 gap-2">
                       <button 
-                        onClick={() => handleExportPDF('evaluasi_dengan_kunci')}
-                        className="w-full text-left px-4 py-4 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                        onClick={() => exportType === 'pdf' ? handleExportPDF('evaluasi_tanpa_kunci') : handleExportJPG('evaluasi_tanpa_kunci')}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
                       >
-                        <span className="font-bold text-slate-700">Soal Evaluasi (Guru/Kunci)</span>
-                        <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={18} />
+                        <span className="font-bold text-slate-700 text-xs">Soal (Siswa)</span>
+                        <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={14} />
                       </button>
-                    )}
+
+                      <button 
+                        onClick={() => exportType === 'pdf' ? handleExportPDF('evaluasi_dengan_kunci') : handleExportJPG('evaluasi_dengan_kunci')}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group transition-all"
+                      >
+                        <span className="font-bold text-slate-700 text-xs">Soal (Guru)</span>
+                        <ChevronDown className="-rotate-90 text-slate-300 group-hover:text-emerald-500 transition-colors" size={14} />
+                      </button>
+                    </div>
                   </div>
                   <div className="p-4 bg-slate-50 flex justify-end">
                     <button 
@@ -1345,12 +1404,26 @@ export default function App() {
 
         {result && (
           <div id="modul-ajar-content-container">
+            {(viewMode === 'presentasi' || (isExportingMode && exportTarget === 'presentasi')) && (
+              <div id="presentation-content" className={viewMode === 'all' ? 'mb-8' : ''}>
+                <PresentationView 
+                  result={result}
+                  subject={subject}
+                  kelas={kelas}
+                  semester={semester}
+                  tahunAjaran={tahunAjaran}
+                  namaPenyusun={namaPenyusun}
+                  logo={logo}
+                  isExportingMode={isExportingMode}
+                />
+              </div>
+            )}
             {(viewMode === 'mindmap' || (isExportingMode && exportTarget === 'mindmap')) && (
               <div id="mindmap-content" className={viewMode === 'all' ? 'mb-8' : ''}>
                 <MindMap data={result} />
               </div>
             )}
-            {viewMode !== 'mindmap' && (
+            {viewMode !== 'mindmap' && viewMode !== 'presentasi' && (
               <ModulContent 
                 result={result}
                 subject={subject}
