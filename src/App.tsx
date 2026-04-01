@@ -663,9 +663,11 @@ export default function App() {
             imageTimeout: 0,
             allowTaint: true,
             onclone: (clonedDoc: Document) => {
+              clonedDoc.body.style.background = 'white';
               const clonedTargetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
               const clonedElement = clonedDoc.getElementById(clonedTargetId);
               if (clonedElement) {
+                clonedElement.style.background = 'white';
                 // Remove any elements that shouldn't be in the PDF
                 const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
                 toRemove.forEach(el => el.remove());
@@ -795,9 +797,11 @@ export default function App() {
           imageTimeout: 0,
           allowTaint: true,
           onclone: (clonedDoc: Document) => {
+            clonedDoc.body.style.background = 'white';
             const clonedTargetId = target === 'mindmap' ? 'mindmap-content' : 'modul-ajar-content';
             const clonedElement = clonedDoc.getElementById(clonedTargetId);
             if (clonedElement) {
+              clonedElement.style.background = 'white';
               const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
               toRemove.forEach(el => el.remove());
               clonedElement.style.padding = '30px';

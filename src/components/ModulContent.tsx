@@ -133,7 +133,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       
       {/* KOP SEKOLAH */}
       {(isExportingMode || displayTarget !== 'all') && (
-        <div className={`pt-2 pb-3 ${isExportingMode ? 'mb-2' : 'mb-6'} border-b-[4px] border-slate-800 border-double flex items-center gap-6`} style={{ pageBreakAfter: 'avoid' }}>
+        <div className={`pt-2 pb-3 ${isExportingMode ? 'mb-2 border-none' : 'mb-6 border-b-[4px] border-slate-800 border-double'} flex items-center gap-6`} style={{ pageBreakAfter: 'avoid' }}>
           {logo ? (
             <div className="w-24 h-24 shrink-0 flex items-center justify-center">
               <img src={logo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
@@ -185,7 +185,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* IDENTITAS MODUL */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode ? 'pt-0 pb-6' : displayTarget === 'all' ? 'p-6 md:p-8 bg-slate-50' : 'pb-6'}`}>
+        <div className={`${isExportingMode ? 'pt-0 pb-6 bg-white' : displayTarget === 'all' ? 'p-6 md:p-8 bg-slate-50' : 'pb-6'}`}>
           {!isExportingMode && displayTarget === 'all' && (
             <div className={`text-center mb-6 pb-6 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
               <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-2">Modul Ajar {result.generatedSubject || subject}</h3>
@@ -206,7 +206,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* A. Model & B. Pendekatan */}
       {shouldRender('all') && (
-        <div className={`grid md:grid-cols-2 gap-6 ${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-rose-50/30'}`} style={{ pageBreakInside: 'avoid' }}>
+        <div className={`grid md:grid-cols-2 gap-6 ${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6 bg-white' : 'p-6 md:p-8 bg-rose-50/30'}`} style={{ pageBreakInside: 'avoid' }}>
           <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-white border border-slate-200 shadow-sm'}`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-indigo-700">
@@ -259,31 +259,31 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* D. ATP TABEL */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-slate-50'}`}>
+        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6 bg-white' : 'p-6 md:p-8 bg-slate-50'}`}>
           <div className="flex items-center gap-2 mb-4 text-indigo-600" style={{ pageBreakAfter: 'avoid' }}>
             <Clock size={20} />
             <h3 className="text-lg font-bold text-slate-800">D. Alur Pembelajaran (1 Pertemuan)</h3>
           </div>
           <div className={`${isExportingMode || displayTarget !== 'all' ? '' : 'overflow-x-auto'}`}>
-            <table className={`w-full text-left border-collapse ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-200' : 'border border-slate-300 bg-white shadow-sm rounded-xl overflow-hidden'}`} style={{ pageBreakInside: 'auto' }}>
+            <table className={`w-full text-left border-collapse ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-300' : 'border border-slate-300 bg-white shadow-sm rounded-xl overflow-hidden'}`} style={{ pageBreakInside: 'auto' }}>
               <thead style={{ display: 'table-header-group' }}>
-                <tr className={`text-slate-800 ${isExportingMode || displayTarget !== 'all' ? 'bg-white border-slate-200' : 'bg-slate-100 border-slate-300'}`}>
-                  <th className={`p-4 font-bold w-1/4 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Tahap Kegiatan</th>
-                  <th className={`p-4 font-bold w-auto text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Deskripsi Kegiatan Guru & Siswa</th>
-                  <th className={`p-4 font-bold w-32 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Durasi</th>
+                <tr className={`text-slate-800 ${isExportingMode || displayTarget !== 'all' ? 'bg-white border-slate-300' : 'bg-slate-100 border-slate-300'}`}>
+                  <th className={`p-4 font-bold w-1/4 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Tahap Kegiatan</th>
+                  <th className={`p-4 font-bold w-auto text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Deskripsi Kegiatan Guru & Siswa</th>
+                  <th className={`p-4 font-bold w-32 text-center align-middle border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'} uppercase tracking-wider text-[11px]`}>Durasi</th>
                 </tr>
               </thead>
               <tbody className="text-slate-800" style={{ pageBreakInside: 'auto' }}>
                 {result.atpTabel?.map((row: any, i: number) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : (isExportingMode ? 'bg-white' : 'bg-slate-50/50')} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'auto' }}>
-                    <td className={`p-4 font-bold align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'} ${isExportingMode ? 'bg-white' : 'bg-slate-50/30'}`}>
+                  <tr key={i} className={isExportingMode ? 'bg-white' : (i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50')} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'auto' }}>
+                    <td className={`p-4 font-bold align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'} ${isExportingMode ? 'bg-white' : 'bg-slate-50/30'}`}>
                       <span className="text-indigo-700 text-sm">{row.tahap}</span>
                     </td>
-                    <td className={`p-4 align-top leading-relaxed border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'} text-sm`}>
+                    <td className={`p-4 align-top leading-relaxed border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'} text-sm`}>
                       {formatText(row.kegiatan)}
                     </td>
-                    <td className={`p-4 align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-slate-300'}`}>
-                      <span className={`inline-block px-3 py-1 rounded-full font-bold text-xs ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-200' : 'bg-indigo-100 text-indigo-700 border border-indigo-200'}`}>
+                    <td className={`p-4 align-middle text-center border ${isExportingMode || displayTarget !== 'all' ? 'border-slate-300' : 'border-slate-300'}`}>
+                      <span className={`inline-block px-3 py-1 rounded-full font-bold text-xs ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-indigo-100 text-indigo-700 border border-indigo-200'}`}>
                         {row.durasi}
                       </span>
                     </td>
@@ -297,7 +297,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* E. Pemantik */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-amber-50/30'}`}>
+        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6 bg-white' : 'p-6 md:p-8 bg-amber-50/30'}`}>
           <div className="flex items-center gap-2 mb-4 text-amber-500" style={{ pageBreakAfter: 'avoid' }}>
             <Lightbulb size={20} />
             <h3 className="text-lg font-bold text-slate-800">E. Pertanyaan Pemantik</h3>
@@ -338,9 +338,9 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           <div className="space-y-4">
             {result.dalil?.map((d: any, idx: number) => (
               <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-md mb-3 inline-block ${isExportingMode || displayTarget !== 'all' ? 'bg-white border border-slate-200 text-slate-800' : 'bg-emerald-100 text-emerald-700'}`}>{d.sumber}</span>
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-md mb-3 inline-block ${isExportingMode || displayTarget !== 'all' ? 'bg-white border-none text-slate-800' : 'bg-emerald-100 text-emerald-700'}`}>{d.sumber}</span>
                 {d.teksArab && <p className="text-2xl font-arabic text-slate-900 text-right mb-4 leading-loose" dir="rtl">{d.teksArab}</p>}
-                <p className={`text-slate-700 italic pl-4 py-1 leading-relaxed ${isExportingMode || displayTarget !== 'all' ? 'border-l-2 border-slate-200' : 'border-l-4 border-emerald-400'}`}>"{d.terjemahan}"</p>
+                <p className={`text-slate-700 italic pl-4 py-1 leading-relaxed ${isExportingMode || displayTarget !== 'all' ? 'border-l-2 border-slate-300' : 'border-l-4 border-emerald-400'}`}>"{d.terjemahan}"</p>
               </div>
             ))}
           </div>
@@ -356,7 +356,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                       {!(isExportingMode || displayTarget !== 'all') && <span className="text-slate-400 bg-slate-100 p-1.5 rounded-full">{isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>}
                     </button>
                     <div className={`overflow-hidden transition-all duration-300 ${isOpen || displayTarget !== 'all' ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>{formatText(sub.penjelasan)}</div>
+                      <div className={`text-slate-700 ${isExportingMode || displayTarget !== 'all' ? 'pt-1 pb-3 bg-white' : 'px-6 pb-6 border-t border-slate-100 pt-5 bg-slate-50/50'}`}>{formatText(sub.penjelasan)}</div>
                     </div>
                   </div>
                 );
@@ -368,12 +368,12 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* G. LKPD */}
       {result.lkpd && shouldRender('lkpd') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'pt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8 bg-blue-50/30'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'pt-4 bg-white' : (isExportingMode || displayTarget !== 'all') ? 'pt-1 bg-white' : 'p-6 md:p-8 bg-blue-50/30'}`}>
           {displayTarget === 'lkpd' && <IdentitasKelompok />}
           {displayTarget === 'all' && <div className="flex items-center gap-2 mb-4 text-blue-600" style={{ pageBreakAfter: 'avoid' }}><FileText size={20} /><h3 className="text-lg font-bold text-slate-800">G. Lembar Kerja Peserta Didik (LKPD)</h3></div>}
           <div className={`rounded-xl ${displayTarget === 'lkpd' ? ((isExportingMode || displayTarget !== 'all') ? 'border-none p-0' : 'border border-slate-300 p-4') : ((isExportingMode || displayTarget !== 'all') ? 'border-none p-4' : 'p-6 bg-white border border-blue-100 shadow-sm')}`} style={{ pageBreakInside: 'avoid' }}>
             <p className={`font-bold text-slate-900 mb-3 ${displayTarget === 'lkpd' ? 'text-lg text-center uppercase mb-5' : 'text-lg'}`}>{result.lkpd.judul}</p>
-            <div className={`${displayTarget === 'lkpd' ? 'mb-4' : (isExportingMode || displayTarget !== 'all' ? 'p-4 rounded-lg border-none mb-4' : 'bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4')}`}><p className="text-slate-800 text-sm leading-relaxed text-justify"><strong>Tujuan Penugasan:</strong><br/>{result.lkpd.tujuan}</p></div>
+            <div className={`${displayTarget === 'lkpd' ? 'mb-4' : (isExportingMode || displayTarget !== 'all' ? 'p-4 rounded-lg border-none mb-4 bg-white' : 'bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4')}`}><p className="text-slate-800 text-sm leading-relaxed text-justify"><strong>Tujuan Penugasan:</strong><br/>{result.lkpd.tujuan}</p></div>
             <p className="text-sm font-bold text-slate-800 mb-2">Langkah-langkah Pengerjaan:</p>
             <div className="space-y-2 text-sm text-slate-800 leading-relaxed text-justify pl-1">{result.lkpd.langkahKerja?.map((l: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-semibold shrink-0">{i + 1}.</span><span>{l}</span></div>))}</div>
           </div>
@@ -419,13 +419,13 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               <div className={`flex items-center gap-2 ${isExportingMode ? 'bg-white' : 'bg-slate-100'} p-1 rounded-lg border ${isExportingMode ? 'border-none' : 'border-slate-200'}`}>
                 <button 
                   onClick={() => setTtsMode('siswa')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'siswa' ? (isExportingMode ? 'bg-white text-emerald-600 border border-emerald-200' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'siswa' ? (isExportingMode ? 'bg-white text-emerald-600 border-none' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Mode Siswa
                 </button>
                 <button 
                   onClick={() => setTtsMode('guru')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'guru' ? (isExportingMode ? 'bg-white text-emerald-600 border border-emerald-200' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'guru' ? (isExportingMode ? 'bg-white text-emerald-600 border-none' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Mode Guru
                 </button>
@@ -620,7 +620,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : (isExportingMode ? 'bg-white border-slate-200 shadow-none' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
+                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : (isExportingMode ? 'bg-white border-slate-300 shadow-none' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
                       {cell.number && (
@@ -649,7 +649,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             <div className={`space-y-6 ${(isExportingMode || displayTarget === 'tts') ? 'pt-8' : ''}`}>
               <div>
                 <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
-                  <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs" style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border border-slate-300 text-slate-800' : 'bg-emerald-100 text-emerald-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar
                 </h4>
                 <div className="space-y-3">
                   {result.tekaTekiSilang.mendatar?.map((item: any, idx: number) => (
@@ -668,7 +668,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
               <div>
                 <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
-                  <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs" style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Menurun
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border border-slate-300 text-slate-800' : 'bg-blue-100 text-blue-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Menurun
                 </h4>
                 <div className="space-y-3">
                   {result.tekaTekiSilang.menurun?.map((item: any, idx: number) => (
@@ -699,7 +699,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           </div>
           <div className="space-y-4">
             {result.pilihanGanda.map((pg: any, idx: number) => (
-              <div key={idx} className={`${displayTarget.startsWith('evaluasi') ? 'pb-3' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-6 rounded-xl bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div key={idx} className={`${displayTarget.startsWith('evaluasi') ? 'pb-3 bg-white' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none bg-white' : 'p-6 rounded-xl bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
                 <div className="flex gap-2 font-bold text-slate-900 mb-3 leading-relaxed"><span className="shrink-0">{idx + 1}.</span><span>{pg.soal}</span></div>
                 <div className={`grid ${displayTarget.startsWith('evaluasi') ? 'grid-cols-1 gap-2 ml-6' : 'grid-cols-1 sm:grid-cols-2 gap-3'} text-sm text-slate-800 mb-3 pl-2`}>
                   <div className="flex gap-2"><span className="font-bold shrink-0 w-4">A.</span><span className="leading-relaxed">{pg.opsiA}</span></div>
@@ -708,7 +708,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   <div className="flex gap-2"><span className="font-bold shrink-0 w-4">D.</span><span className="leading-relaxed">{pg.opsiD}</span></div>
                   <div className={`flex gap-2 ${!displayTarget.startsWith('evaluasi') ? 'sm:col-span-2' : ''}`}><span className="font-bold shrink-0 w-4">E.</span><span className="leading-relaxed">{pg.opsiE}</span></div>
                 </div>
-                {(displayTarget === 'all' || displayTarget === 'evaluasi_dengan_kunci') && <div className={`text-sm font-bold mt-1 inline-block px-3 py-1.5 rounded-md ${(isExportingMode || displayTarget !== 'all') ? 'border-none text-slate-800' : 'bg-emerald-100 border border-emerald-200 text-emerald-800'}`}>Kunci Jawaban: {pg.kunci}</div>}
+                {(displayTarget === 'all' || displayTarget === 'evaluasi_dengan_kunci') && <div className={`text-sm font-bold mt-1 inline-block px-3 py-1.5 rounded-md ${(isExportingMode || displayTarget !== 'all') ? 'border-none text-slate-800 bg-white' : 'bg-emerald-100 border border-emerald-200 text-emerald-800'}`}>Kunci Jawaban: {pg.kunci}</div>}
               </div>
             ))}
           </div>
@@ -717,18 +717,18 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* K. Penilaian */}
       {result.instrumenPenilaian && shouldRender('all') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 pt-4 mt-4' : 'p-6 md:p-8 bg-slate-800 text-slate-50'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 pt-4 mt-4 bg-white' : 'p-6 md:p-8 bg-slate-800 text-slate-50'}`}>
           <div className="flex items-center gap-2 mb-4 text-slate-400" style={{ pageBreakAfter: 'avoid' }}><ClipboardCheck size={20} /><h3 className={`text-lg font-bold ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-white'}`}>K. Instrumen Penilaian</h3></div>
           <div className="grid md:grid-cols-3 gap-5 text-sm" style={{ pageBreakInside: 'avoid' }}>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none bg-white' : 'bg-slate-700/50 border border-slate-600'}`}>
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-emerald-400 border-slate-600'}`}>Aspek Sikap</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.sikap?.map((s: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{s}</span></div>))}</div>
             </div>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none bg-white' : 'bg-slate-700/50 border border-slate-600'}`}>
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-blue-400 border-slate-600'}`}>Aspek Pengetahuan</p>
               <div className={`leading-relaxed ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{formatText(result.instrumenPenilaian.pengetahuan)}</div>
             </div>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none bg-white' : 'bg-slate-700/50 border border-slate-600'}`}>
               <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-amber-400 border-slate-600'}`}>Aspek Keterampilan</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.keterampilan?.map((k: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{k}</span></div>))}</div>
             </div>
