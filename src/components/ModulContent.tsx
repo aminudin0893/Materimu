@@ -486,9 +486,10 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             </div>
           )}
           
-          <div className={`grid ${isExportingMode || displayTarget === 'tts' ? 'grid-cols-1' : 'md:grid-cols-2'} gap-8`}>
+          {/* TTS Section Container */}
+          <div className={isExportingMode || displayTarget === 'tts' ? 'space-y-0' : 'grid md:grid-cols-2 gap-8'}>
             {/* Grid TTS (Dynamic Generation) */}
-            <div className={`flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl shadow-[inset_0_0_0_1000px_#f8fafc] ${isExportingMode || displayTarget === 'tts' ? 'w-full max-w-full' : ''}`} style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+            <div className={`flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl shadow-[inset_0_0_0_1000px_#f8fafc] ${isExportingMode || displayTarget === 'tts' ? 'w-full max-w-full mb-8' : ''}`} style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
               <div className={`grid grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5 mb-4 w-full ${isExportingMode || displayTarget === 'tts' ? 'max-w-[600px]' : 'max-w-[400px]'}`}>
                 {(() => {
                   const size = 15;
@@ -641,10 +642,10 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             </div>
 
             {/* Page break for PDF export */}
-            {(isExportingMode || displayTarget === 'tts') && <div className="page-break h-1"></div>}
+            {(isExportingMode || displayTarget === 'tts') && <div className="page-break"></div>}
 
             {/* Pertanyaan TTS */}
-            <div className={`space-y-6 ${(isExportingMode || displayTarget === 'tts') ? 'pt-4' : ''}`}>
+            <div className={`space-y-6 ${(isExportingMode || displayTarget === 'tts') ? 'pt-8' : ''}`}>
               <div>
                 <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
                   <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs" style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar

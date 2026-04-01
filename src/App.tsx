@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, Sparkles, Loader2, Copy, Check, AlertCircle, 
-  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize2, Minimize2, Presentation, Printer
+  ChevronDown, Settings2, Download, Layers, FileText, User, Users, ListChecks, Eye, EyeOff, Clipboard, Image as ImageIcon, RotateCw, Share2, Grid, Maximize2, Minimize2, Presentation, Printer, Lock
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { DAFTAR_MAPEL, initialData } from './constants';
@@ -52,6 +52,11 @@ export default function App() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  
+  // Login State
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   const menuRef = useRef<HTMLDivElement>(null);
   const jpgMenuRef = useRef<HTMLDivElement>(null);
@@ -130,6 +135,9 @@ export default function App() {
 
   // Load from localStorage on mount
   useEffect(() => {
+    const savedLogin = localStorage.getItem('is_logged_in');
+    if (savedLogin === 'true') setIsLoggedIn(true);
+
     const savedKey = localStorage.getItem('gemini_api_key');
     if (savedKey) setCustomApiKey(savedKey);
     
@@ -189,6 +197,23 @@ export default function App() {
       localStorage.setItem('last_generated_modul', JSON.stringify(result));
     }
   }, [result]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === 'Amin0893&#') {
+      setIsLoggedIn(true);
+      localStorage.setItem('is_logged_in', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Password salah. Silakan coba lagi.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('is_logged_in');
+    setPasswordInput('');
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -910,11 +935,73 @@ export default function App() {
     });
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in duration-500">
+          <div className="p-8 bg-emerald-600 text-white text-center">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+              <Lock size={32} />
+            </div>
+            <h1 className="text-2xl font-bold">Dashboard Aplikasi </h1>
+            <p className="text-emerald-100 text-sm mt-2">Silakan masukkan akun anda untuk melanjutkan</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="p-8 space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Akun Aplikasi</label>
+              <div className="relative">
+                <input 
+                  type={showApiKey ? "text" : "password"} 
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="Masukkan email terdaftar..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors"
+                >
+                  {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {loginError && (
+                <p className="text-xs font-bold text-rose-500 mt-1 ml-1 flex items-center gap-1">
+                  <AlertCircle size={12} /> {loginError}
+                </p>
+              )}
+            </div>
+            
+            <button 
+              type="submit"
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              Masuk Sekarang
+            </button>
+            
+            <p className="text-center text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
+              © 2026 Modul Ajar • Aminudin, S.Pd.
+            </p>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen font-sans p-4 md:p-8 pb-20 relative transition-colors duration-500 ${isFocusMode ? 'bg-white' : 'bg-slate-50 text-slate-800'}`}>
       {/* Refresh & Focus Mode Buttons */}
       {!isExportingMode && (
         <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2 no-print">
+          <button 
+            onClick={handleLogout}
+            className="p-2.5 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-white rounded-xl shadow-sm transition-all group"
+            title="Keluar / Logout"
+          >
+            <Lock size={18} />
+          </button>
           <button 
             onClick={() => window.location.reload()}
             className="p-2.5 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-xl shadow-sm transition-all group"
