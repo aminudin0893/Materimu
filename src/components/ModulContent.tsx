@@ -83,8 +83,8 @@ export const ModulContent: React.FC<ModulContentProps> = ({
   const IdentitasIndividu = () => {
     const defaultKelas = kelas.includes("-") ? kelas.split("-")[1].trim() : kelas;
     return (
-      <div className="mb-4 pb-4 border-b border-slate-300 text-sm text-slate-800 flex justify-between font-serif" style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
-        <div className="flex flex-col justify-center space-y-2 text-base">
+      <div className={`${isExportingMode ? 'mb-2 pb-2' : 'mb-4 pb-4'} border-b border-slate-300 text-sm text-slate-800 flex justify-between font-serif`} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
+        <div className="flex flex-col justify-center space-y-1 text-base">
             <p><span className="font-semibold inline-block w-40">Nama Siswa</span> : ...........................................................</p>
             <p><span className="font-semibold inline-block w-40">Kelas / No. Absen</span> : {defaultKelas} / ........................................</p>
             <p><span className="font-semibold inline-block w-40">Tanggal</span> : ...........................................................</p>
@@ -133,7 +133,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       
       {/* KOP SEKOLAH */}
       {(isExportingMode || displayTarget !== 'all') && (
-        <div className="pt-2 pb-3 mb-6 border-b-[4px] border-slate-800 border-double flex items-center gap-6" style={{ pageBreakAfter: 'avoid' }}>
+        <div className={`pt-2 pb-3 ${isExportingMode ? 'mb-2' : 'mb-6'} border-b-[4px] border-slate-800 border-double flex items-center gap-6`} style={{ pageBreakAfter: 'avoid' }}>
           {logo ? (
             <div className="w-24 h-24 shrink-0 flex items-center justify-center">
               <img src={logo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
@@ -168,10 +168,11 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* JUDUL DOKUMEN (DIBAWAH KOP) */}
       {(isExportingMode || displayTarget !== 'all') && (
-        <div className="text-center mb-6">
+        <div className={`text-center ${isExportingMode ? 'mb-2' : 'mb-6'}`}>
           <h1 className="text-lg font-bold uppercase tracking-widest text-slate-800 leading-tight">
             {displayTarget === 'all' && `MODUL AJAR ${(result.generatedSubject || subject).toUpperCase()}`}
             {displayTarget === 'lkpd' && `LEMBAR KERJA PESERTA DIDIK (LKPD)`}
+            {displayTarget === 'tts' && `TEKA-TEKI SILANG (TTS)`}
             {displayTarget === 'penugasan_individu' && `LEMBAR PENUGASAN MANDIRI`}
             {displayTarget === 'penugasan_kelompok' && `LEMBAR TUGAS KELOMPOK`}
             {displayTarget.startsWith('evaluasi') && `EVALUASI FORMATIF PESERTA DIDIK`}
@@ -406,9 +407,9 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* I. Teka-Teki Silang */}
       {result.tekaTekiSilang && (shouldRender('all') || shouldRender('tts')) && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-300 pt-6 mt-6' : 'p-6 md:p-8'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? (displayTarget === 'tts' ? 'pt-2 mt-0' : 'border-t border-slate-300 pt-6 mt-6') : 'p-6 md:p-8'}`}>
           {displayTarget === 'tts' && <IdentitasIndividu />}
-          <div className="flex items-center justify-between mb-6 no-print" style={{ pageBreakAfter: 'avoid' }}>
+          <div className="flex items-center justify-between mb-4 no-print" style={{ pageBreakAfter: 'avoid' }}>
             <div className="flex items-center gap-2 text-emerald-600">
               <Grid size={20} className={displayTarget === 'tts' ? 'hidden' : ''} />
               <h3 className="text-lg font-bold text-slate-800">I. Teka-Teki Silang (TTS)</h3>
@@ -489,8 +490,8 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           {/* TTS Section Container */}
           <div className={isExportingMode || displayTarget === 'tts' ? 'space-y-0' : 'grid md:grid-cols-2 gap-8'}>
             {/* Grid TTS (Dynamic Generation) */}
-            <div className={`flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl shadow-[inset_0_0_0_1000px_#f8fafc] ${isExportingMode || displayTarget === 'tts' ? 'w-full max-w-full mb-8' : ''}`} style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
-              <div className={`grid grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5 mb-4 w-full ${isExportingMode || displayTarget === 'tts' ? 'max-w-[600px]' : 'max-w-[400px]'}`}>
+            <div className={`flex flex-col items-center justify-center ${isExportingMode ? 'p-2' : 'p-8'} bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl shadow-[inset_0_0_0_1000px_#f8fafc] ${isExportingMode || displayTarget === 'tts' ? 'w-full max-w-full mb-2' : ''}`} style={{ pageBreakInside: 'avoid', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+              <div className={`grid grid-cols-[repeat(15,minmax(0,1fr))] gap-0.5 mb-1 w-full ${isExportingMode || displayTarget === 'tts' ? 'max-w-[500px]' : 'max-w-[400px]'}`}>
                 {(() => {
                   const size = 15;
                   const grid = Array(size * size).fill(null).map(() => ({ char: '', number: '', isWhite: false }));
