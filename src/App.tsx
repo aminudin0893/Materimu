@@ -205,7 +205,7 @@ export default function App() {
       localStorage.setItem('is_logged_in', 'true');
       setLoginError('');
     } else {
-      setLoginError('Password salah. Silakan coba lagi.');
+      setLoginError('Email salah. Silakan coba lagi.');
     }
   };
 
@@ -937,53 +937,78 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in duration-500">
-          <div className="p-8 bg-emerald-600 text-white text-center">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <Lock size={32} />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-800 relative overflow-hidden animate-gradient-xy bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-200/40 rounded-full blur-[120px] animate-blob"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-200/40 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
+          <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] bg-purple-200/30 rounded-full blur-[120px] animate-blob animation-delay-4000"></div>
+          <div className="absolute bottom-[20%] left-[10%] w-[35%] h-[35%] bg-amber-100/30 rounded-full blur-[100px] animate-blob animation-delay-2000"></div>
+          
+          {/* Subtle Grid Pattern */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] mix-blend-overlay"></div>
+          
+          {/* Floating Particles/Shapes */}
+          <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-emerald-400/20 rounded-full animate-bounce animation-delay-1000"></div>
+          <div className="absolute bottom-1/4 right-1/3 w-6 h-6 bg-blue-400/20 rounded-full animate-pulse animation-delay-2000"></div>
+          <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-purple-400/20 rounded-full animate-bounce animation-delay-3000"></div>
+        </div>
+
+        <div className="w-full max-w-md bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/60 overflow-hidden animate-in fade-in zoom-in duration-700 relative z-10">
+          <div className="p-10 bg-emerald-600 text-white text-center relative overflow-hidden">
+            {/* Decorative elements in header */}
+            <div className="absolute top-[-30px] right-[-30px] w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute bottom-[-30px] left-[-30px] w-32 h-32 bg-black/10 rounded-full blur-2xl"></div>
+            
+            <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/30 shadow-[inset_0_2px_4px_rgba(255,255,255,0.3)] animate-in slide-in-from-top-6 duration-1000">
+              <Lock size={40} className="animate-pulse text-white drop-shadow-md" />
             </div>
-            <h1 className="text-2xl font-bold">Dashboard Aplikasi </h1>
-            <p className="text-emerald-100 text-sm mt-2">Silakan masukkan akun anda untuk melanjutkan</p>
+            <h1 className="text-3xl font-extrabold tracking-tight mb-2">Dashboard Aplikasi</h1>
+            <p className="text-emerald-100/90 text-sm font-medium">Silakan masukkan akun anda untuk melanjutkan</p>
           </div>
           
-          <form onSubmit={handleLogin} className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Akun Aplikasi</label>
-              <div className="relative">
+          <form onSubmit={handleLogin} className="p-10 space-y-8">
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Akun Aplikasi</label>
+              <div className="relative group">
                 <input 
                   type={showApiKey ? "text" : "password"} 
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder="Masukkan email terdaftar..."
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none text-slate-700"
+                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all outline-none text-slate-700 placeholder:text-slate-400 font-medium"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors p-1"
                 >
-                  {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showApiKey ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
               {loginError && (
-                <p className="text-xs font-bold text-rose-500 mt-1 ml-1 flex items-center gap-1">
-                  <AlertCircle size={12} /> {loginError}
-                </p>
+                <div className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 animate-in slide-in-from-left-2 duration-300">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <p className="text-xs font-bold">{loginError}</p>
+                </div>
               )}
             </div>
             
             <button 
               type="submit"
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg shadow-[0_20px_40px_-12px_rgba(16,185,129,0.3)] hover:shadow-[0_25px_50px_-12px_rgba(16,185,129,0.4)] transition-all active:scale-[0.97] flex items-center justify-center gap-3 group"
             >
-              Masuk Sekarang
+              <span>Masuk Sekarang</span>
+              <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
             </button>
             
-            <p className="text-center text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-              © 2026 Modul Ajar • Aminudin, S.Pd.
-            </p>
+            <div className="pt-4 flex flex-col items-center gap-4">
+              <div className="h-px w-12 bg-slate-200"></div>
+              <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                © 2026 Modul Ajar • Aminudin, S.Pd.
+              </p>
+            </div>
           </form>
         </div>
       </div>
