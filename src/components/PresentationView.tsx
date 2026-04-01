@@ -192,7 +192,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({
 
   const renderSlideContent = (slide: any) => {
     const isPrint = isExportingMode;
-    const containerClass = isPrint ? "min-h-[600px] border-b-2 border-slate-200 py-12" : "flex flex-col h-full pt-24 md:pt-32 pb-12 px-6 md:px-12 relative z-10";
+    const containerClass = isPrint ? "min-h-[600px] border-b-2 border-slate-200 py-12" : "flex flex-col h-full pt-24 md:pt-32 pb-12 px-6 md:px-12 relative z-10 overflow-y-auto custom-scrollbar";
     
     switch (slide.type) {
       case 'title':
@@ -307,7 +307,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({
               <motion.div 
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className={`${isArabic ? 'lg:col-span-12' : 'lg:col-span-8'} bg-white p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40 ${isPrint ? '' : 'overflow-y-auto custom-scrollbar'} relative overflow-hidden`}
+                className={`${isArabic ? 'lg:col-span-12' : 'lg:col-span-8'} bg-white p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40 ${isPrint ? '' : 'overflow-y-auto custom-scrollbar'} relative`}
               >
                 <div className={`absolute top-0 left-0 w-2 h-full bg-${slide.color}-500`} />
                 <p className={`text-xl md:text-3xl text-slate-700 leading-relaxed font-medium ${isArabic ? 'text-right font-serif leading-[1.8]' : 'text-justify'}`}>
@@ -388,7 +388,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({
               </div>
               <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">{slide.title}</h2>
             </div>
-            <div className={`grid grid-cols-1 ${isPrint ? 'grid-cols-1' : 'lg:grid-cols-3'} gap-6 md:gap-10 h-full overflow-hidden`}>
+            <div className={`grid grid-cols-1 ${isPrint ? 'grid-cols-1' : 'lg:grid-cols-3'} gap-6 md:gap-10 min-h-full`}>
               {/* Left Column: Points (Accordion/Dropdown) */}
               <motion.div 
                 variants={containerVariants}
