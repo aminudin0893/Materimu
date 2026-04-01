@@ -294,7 +294,7 @@ export default function App() {
 
     const apiKey = customApiKey || process.env.GEMINI_API_KEY!;
     if (!apiKey) {
-      setError('API Key Gemini tidak ditemukan. Silakan masukkan API Key Anda.');
+      setError('Kode tidak ditemukan. Silakan masukkan kode Anda.');
       setIsLoading(false);
       return;
     }
@@ -1053,7 +1053,7 @@ export default function App() {
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">WAKA AIK SMPMUSAPRO</h1>
             <p className="text-emerald-600 font-semibold text-sm md:text-base mt-1">oleh: Aminudin, S.Pd.</p>
-            <p className="text-slate-500 mt-2 text-sm md:text-base max-w-xl mx-auto">Aplikasi penyusun Modul Ajar Terstruktur</p>
+            <p className="text-slate-500 mt-2 text-sm md:text-base max-w-xl mx-auto">Modul Ajar Terstruktur</p>
           </header>
         )}
 
@@ -1084,13 +1084,13 @@ export default function App() {
 
               <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <div className="flex-1">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Custom Gemini API Key (Opsional)</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Input Kode Aplikasi</label>
                   <div className="relative flex items-center">
                     <input
                       type={showApiKey ? "text" : "password"}
                       value={customApiKey}
                       onChange={(e) => setCustomApiKey(e.target.value)}
-                      placeholder="Masukkan API Key Anda..."
+                      placeholder="Masukkan kode Anda..."
                       className="w-full pl-3 pr-16 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs"
                       disabled={isLoading || isPdfLoading || isJpgLoading}
                     />
@@ -1248,13 +1248,6 @@ export default function App() {
 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex flex-col items-start gap-1">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
-                      <div className={`w-2 h-2 rounded-full ${requestHistory.filter(t => t > Date.now() - 60000).length >= 12 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                        Estimasi Kuota: {requestHistory.filter(t => t > Date.now() - 60000).length} / 15 RPM (Free Tier)
-                      </span>
-                    </div>
-                    <p className="text-[9px] text-slate-400 ml-1 italic">Reset otomatis setiap 60 detik per permintaan.</p>
                   </div>
                   
                   <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1279,7 +1272,7 @@ export default function App() {
                       ) : (
                         <>
                           <Sparkles size={18} /> 
-                          Buat Modul Ajar Canggih
+                          Buat Modul Ajar
                         </>
                       )}
                     </button>
