@@ -83,7 +83,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
   const IdentitasIndividu = () => {
     const defaultKelas = kelas.includes("-") ? kelas.split("-")[1].trim() : kelas;
     return (
-      <div className={`${isExportingMode ? 'mb-2 pb-2' : 'mb-4 pb-4'} border-b ${isExportingMode ? 'border-slate-100' : 'border-slate-300'} text-sm text-slate-800 flex justify-between font-serif`} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
+      <div className={`${isExportingMode ? 'mb-2 pb-2' : 'mb-4 pb-4'} ${isExportingMode ? 'border-none' : 'border-b border-slate-300'} text-sm text-slate-800 flex justify-between font-serif`} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
         <div className="flex flex-col justify-center space-y-1 text-base">
             <p><span className="font-semibold inline-block w-40">Nama Siswa</span> : ...........................................................</p>
             <p><span className="font-semibold inline-block w-40">Kelas / No. Absen</span> : {defaultKelas} / ........................................</p>
@@ -100,7 +100,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
   const IdentitasKelompok = () => {
     const defaultKelas = kelas.includes("-") ? kelas.split("-")[1].trim() : kelas;
     return (
-      <div className={`mb-4 pb-4 border-b ${isExportingMode ? 'border-slate-100' : 'border-slate-300'} text-sm text-slate-800 flex justify-between font-serif`} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
+      <div className={`mb-4 pb-4 ${isExportingMode ? 'border-none' : 'border-b border-slate-300'} text-sm text-slate-800 flex justify-between font-serif`} style={{ pageBreakInside: 'avoid', pageBreakAfter: 'avoid' }}>
         <div className="w-3/4 pr-4">
             <div className="flex flex-col space-y-2 text-base mb-3">
               <p><span className="font-semibold inline-block w-40">Nama Kelompok</span> : ...........................................................</p>
@@ -128,7 +128,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
   return (
     <div 
       id="modul-ajar-content" 
-      className={`${isExportingMode ? 'bg-white p-0 text-sm font-serif' : 'bg-white rounded-2xl overflow-hidden text-slate-800 shadow-sm border border-slate-200 ' + (displayTarget === 'all' ? 'divide-y divide-slate-100' : 'p-6 md:p-8')}`}
+      className={`${isExportingMode ? 'bg-white p-0 text-sm font-serif shadow-none border-none' : 'bg-white rounded-2xl overflow-hidden text-slate-800 shadow-sm border border-slate-200 ' + (displayTarget === 'all' ? 'divide-y divide-slate-100' : 'p-6 md:p-8')}`}
     >
       
       {/* KOP SEKOLAH */}
@@ -139,7 +139,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               <img src={logo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
             </div>
           ) : (
-            <div className={`w-24 h-24 shrink-0 border-2 border-dashed ${isExportingMode ? 'border-slate-100' : 'border-slate-300'} rounded-lg flex items-center justify-center text-[10px] text-slate-400 text-center p-2`}>
+            <div className={`w-24 h-24 shrink-0 border-2 border-dashed ${isExportingMode ? 'border-transparent' : 'border-slate-300'} rounded-lg flex items-center justify-center text-[10px] text-slate-400 text-center p-2`}>
               Logo Sekolah
             </div>
           )}
@@ -187,7 +187,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       {shouldRender('all') && (
         <div className={`${isExportingMode ? 'pt-0 pb-6' : displayTarget === 'all' ? 'p-6 md:p-8 bg-slate-50' : 'pb-6'}`}>
           {!isExportingMode && displayTarget === 'all' && (
-            <div className="text-center mb-6 border-b border-slate-200 pb-6">
+            <div className={`text-center mb-6 pb-6 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
               <h3 className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-2">Modul Ajar {result.generatedSubject || subject}</h3>
               <h4 className="text-2xl font-black text-slate-900">{result.judulMateri}</h4>
             </div>
@@ -206,15 +206,15 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* A. Model & B. Pendekatan */}
       {shouldRender('all') && (
-        <div className={`grid md:grid-cols-2 gap-6 ${isExportingMode || displayTarget !== 'all' ? 'border-b border-slate-100 pb-6 mb-6' : 'p-6 md:p-8 bg-rose-50/30'}`} style={{ pageBreakInside: 'avoid' }}>
-          <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-100' : 'bg-white border border-slate-200 shadow-sm'}`}>
+        <div className={`grid md:grid-cols-2 gap-6 ${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-rose-50/30'}`} style={{ pageBreakInside: 'avoid' }}>
+          <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-white border border-slate-200 shadow-sm'}`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-indigo-700">
                 <Layers size={20} />
                 <h3 className="font-bold text-lg text-slate-800">A. Model Pembelajaran</h3>
               </div>
               {!isExportingMode && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full border border-indigo-100 uppercase tracking-tighter">
+                <span className={`flex items-center gap-1 px-2 py-0.5 text-indigo-600 text-[10px] font-bold rounded-full uppercase tracking-tighter ${isExportingMode ? 'bg-white border-none' : 'bg-indigo-50 border border-indigo-100'}`}>
                   <Sparkles size={10} /> Rekomendasi AI
                 </span>
               )}
@@ -223,13 +223,13 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               {result.modelPembelajaran && result.modelPembelajaran.includes('\n') ? (
                 formatText(result.modelPembelajaran)
               ) : (
-                <div className="p-3 bg-indigo-50/50 rounded-lg border border-indigo-100/50 italic text-sm">
+                <div className={`p-3 italic text-sm ${isExportingMode ? 'bg-white border-none rounded-none' : 'bg-indigo-50/50 rounded-lg border border-indigo-100/50'}`}>
                   {result.modelPembelajaran}
                 </div>
               )}
             </div>
           </div>
-          <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-100' : isIsmuba ? 'bg-white border border-sky-200 shadow-sm' : 'bg-white border border-rose-200 shadow-sm'}`}>
+          <div className={`p-5 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : isIsmuba ? 'bg-white border border-sky-200 shadow-sm' : 'bg-white border border-rose-200 shadow-sm'}`}>
             <div className={`flex items-center gap-2 mb-3 ${isIsmuba ? 'text-sky-600' : 'text-rose-600'}`}>
               {isIsmuba ? <Sun size={20} /> : <Heart size={20} />}
               <h3 className="font-bold text-lg text-slate-800">{judulPendekatanKhusus}</h3>
@@ -241,7 +241,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* C. TP */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode || displayTarget !== 'all' ? 'border-b border-slate-100 pb-6 mb-6' : 'p-6 md:p-8'}`}>
+        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8'}`}>
           <div className="flex items-center gap-2 mb-4 text-emerald-600" style={{ pageBreakAfter: 'avoid' }}>
             <Target size={20} />
             <h3 className="text-lg font-bold text-slate-800">C. Tujuan Pembelajaran (TP)</h3>
@@ -259,7 +259,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* D. ATP TABEL */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode || displayTarget !== 'all' ? 'border-b border-slate-100 pb-6 mb-6' : 'p-6 md:p-8 bg-slate-50'}`}>
+        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-slate-50'}`}>
           <div className="flex items-center gap-2 mb-4 text-indigo-600" style={{ pageBreakAfter: 'avoid' }}>
             <Clock size={20} />
             <h3 className="text-lg font-bold text-slate-800">D. Alur Pembelajaran (1 Pertemuan)</h3>
@@ -297,14 +297,14 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* E. Pemantik */}
       {shouldRender('all') && (
-        <div className={`${isExportingMode || displayTarget !== 'all' ? 'border-b border-slate-100 pb-6 mb-6' : 'p-6 md:p-8 bg-amber-50/30'}`}>
+        <div className={`${isExportingMode || displayTarget !== 'all' ? 'pb-6 mb-6' : 'p-6 md:p-8 bg-amber-50/30'}`}>
           <div className="flex items-center gap-2 mb-4 text-amber-500" style={{ pageBreakAfter: 'avoid' }}>
             <Lightbulb size={20} />
             <h3 className="text-lg font-bold text-slate-800">E. Pertanyaan Pemantik</h3>
           </div>
           <div className="space-y-4">
             {result.pertanyaanPemantik?.map((p: any, idx: number) => (
-              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-100' : 'bg-white border border-amber-100 shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-white border border-amber-100 shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
                 <div className="flex gap-2 font-bold text-slate-800 mb-2 leading-relaxed">
                   <span className="text-amber-600 shrink-0">Tanya:</span>
                   <span>{p.pertanyaan}</span>
@@ -313,7 +313,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                    <div className="flex gap-2"><span className="font-semibold text-slate-500 shrink-0">Siswa 1:</span><span className="text-slate-700 italic">"{p.jawabanAlternatif1 || p.jawaban}"</span></div>
                    {p.jawabanAlternatif2 && <div className="flex gap-2"><span className="font-semibold text-slate-500 shrink-0">Siswa 2:</span><span className="text-slate-700 italic">"{p.jawabanAlternatif2}"</span></div>}
                 </div>
-                <div className={`mt-3 pt-3 flex gap-2 ${isExportingMode || displayTarget !== 'all' ? 'border-t border-slate-100' : 'border-t border-slate-100'}`}>
+                <div className={`mt-3 pt-3 flex gap-2 ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'border-t border-slate-100'}`}>
                   <span className="font-bold text-slate-600 shrink-0">Penjelasan Guru:</span>
                   <span className="text-slate-700 leading-relaxed text-justify">{p.penjelasanGuru || p.jawaban}</span>
                 </div>
@@ -337,10 +337,10 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           <p className="font-bold text-slate-800 mb-2" style={{ pageBreakAfter: 'avoid' }}>2. Dalil Al-Quran / Hadits</p>
           <div className="space-y-4">
             {result.dalil?.map((d: any, idx: number) => (
-              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border border-slate-100' : 'bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-md mb-3 inline-block ${isExportingMode || displayTarget !== 'all' ? 'bg-slate-100 text-slate-800' : 'bg-emerald-100 text-emerald-700'}`}>{d.sumber}</span>
+              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-md mb-3 inline-block ${isExportingMode || displayTarget !== 'all' ? 'bg-white border border-slate-200 text-slate-800' : 'bg-emerald-100 text-emerald-700'}`}>{d.sumber}</span>
                 {d.teksArab && <p className="text-2xl font-arabic text-slate-900 text-right mb-4 leading-loose" dir="rtl">{d.teksArab}</p>}
-                <p className={`text-slate-700 italic pl-4 py-1 border-l-4 leading-relaxed ${isExportingMode || displayTarget !== 'all' ? 'border-slate-200' : 'border-emerald-400'}`}>"{d.terjemahan}"</p>
+                <p className={`text-slate-700 italic pl-4 py-1 leading-relaxed ${isExportingMode || displayTarget !== 'all' ? 'border-l-2 border-slate-200' : 'border-l-4 border-emerald-400'}`}>"{d.terjemahan}"</p>
               </div>
             ))}
           </div>
@@ -368,12 +368,12 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* G. LKPD */}
       {result.lkpd && shouldRender('lkpd') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'border-t border-slate-100 pt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8 bg-blue-50/30'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'pt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8 bg-blue-50/30'}`}>
           {displayTarget === 'lkpd' && <IdentitasKelompok />}
           {displayTarget === 'all' && <div className="flex items-center gap-2 mb-4 text-blue-600" style={{ pageBreakAfter: 'avoid' }}><FileText size={20} /><h3 className="text-lg font-bold text-slate-800">G. Lembar Kerja Peserta Didik (LKPD)</h3></div>}
-          <div className={`rounded-xl ${displayTarget === 'lkpd' ? ((isExportingMode || displayTarget !== 'all') ? 'border-none p-0' : 'border border-slate-300 p-4') : ((isExportingMode || displayTarget !== 'all') ? 'border border-slate-100 p-4' : 'p-6 bg-white border border-blue-100 shadow-sm')}`} style={{ pageBreakInside: 'avoid' }}>
+          <div className={`rounded-xl ${displayTarget === 'lkpd' ? ((isExportingMode || displayTarget !== 'all') ? 'border-none p-0' : 'border border-slate-300 p-4') : ((isExportingMode || displayTarget !== 'all') ? 'border-none p-4' : 'p-6 bg-white border border-blue-100 shadow-sm')}`} style={{ pageBreakInside: 'avoid' }}>
             <p className={`font-bold text-slate-900 mb-3 ${displayTarget === 'lkpd' ? 'text-lg text-center uppercase mb-5' : 'text-lg'}`}>{result.lkpd.judul}</p>
-            <div className={`${displayTarget === 'lkpd' ? 'mb-4' : (isExportingMode || displayTarget !== 'all' ? 'p-4 rounded-lg border border-slate-100 mb-4' : 'bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4')}`}><p className="text-slate-800 text-sm leading-relaxed text-justify"><strong>Tujuan Penugasan:</strong><br/>{result.lkpd.tujuan}</p></div>
+            <div className={`${displayTarget === 'lkpd' ? 'mb-4' : (isExportingMode || displayTarget !== 'all' ? 'p-4 rounded-lg border-none mb-4' : 'bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4')}`}><p className="text-slate-800 text-sm leading-relaxed text-justify"><strong>Tujuan Penugasan:</strong><br/>{result.lkpd.tujuan}</p></div>
             <p className="text-sm font-bold text-slate-800 mb-2">Langkah-langkah Pengerjaan:</p>
             <div className="space-y-2 text-sm text-slate-800 leading-relaxed text-justify pl-1">{result.lkpd.langkahKerja?.map((l: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-semibold shrink-0">{i + 1}.</span><span>{l}</span></div>))}</div>
           </div>
@@ -382,21 +382,21 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* H. Penugasan */}
       {(shouldRender('all') || shouldRender('penugasan_individu') || shouldRender('penugasan_kelompok')) && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'border-t border-slate-100 pt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'pt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8'}`}>
           {displayTarget === 'all' && <h3 className="text-lg font-bold text-slate-800 mb-4" style={{ pageBreakAfter: 'avoid' }}>H. Penugasan</h3>}
           <div className={`grid ${displayTarget === 'all' ? 'md:grid-cols-2 gap-6' : 'grid-cols-1'}`}>
             {(shouldRender('all') || shouldRender('penugasan_individu')) && result.tugasIndividu && (
-              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border border-slate-100' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
                 {displayTarget === 'penugasan_individu' && <IdentitasIndividu />}
-                {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-b border-slate-100' : 'border-b border-slate-100'}`}><User size={18} /> Tugas Individu</div>}
+                {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'border-b border-slate-100'}`}><User size={18} /> Tugas Individu</div>}
                 <p className={`font-bold text-slate-900 mb-3 ${displayTarget !== 'all' ? 'text-lg uppercase text-center mb-5' : 'text-md'}`}>{result.tugasIndividu.judul}</p>
                 <div className="text-slate-800 text-sm">{formatText(result.tugasIndividu.instruksi)}</div>
               </div>
             )}
             {(shouldRender('all') || shouldRender('penugasan_kelompok')) && result.tugasKelompok && (
-              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border border-slate-100' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
                 {displayTarget === 'penugasan_kelompok' && <IdentitasKelompok />}
-                {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-b border-slate-100' : 'border-b border-slate-100'}`}><Users size={18} /> Tugas Kelompok</div>}
+                {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'border-b border-slate-100'}`}><Users size={18} /> Tugas Kelompok</div>}
                 <p className={`font-bold text-slate-900 mb-3 ${displayTarget !== 'all' ? 'text-lg uppercase text-center mb-5' : 'text-md'}`}>{result.tugasKelompok.judul}</p>
                 <div className="text-slate-800 text-sm">{formatText(result.tugasKelompok.instruksi)}</div>
               </div>
@@ -407,7 +407,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* I. Teka-Teki Silang */}
       {result.tekaTekiSilang && (shouldRender('all') || shouldRender('tts')) && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? (displayTarget === 'tts' ? 'pt-2 mt-0' : 'border-t border-slate-100 pt-6 mt-6') : 'p-6 md:p-8'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? (displayTarget === 'tts' ? 'pt-2 mt-0' : 'pt-6 mt-6') : 'p-6 md:p-8'}`}>
           {displayTarget === 'tts' && <IdentitasIndividu />}
           <div className="flex items-center justify-between mb-4 no-print" style={{ pageBreakAfter: 'avoid' }}>
             <div className="flex items-center gap-2 text-emerald-600">
@@ -419,13 +419,13 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               <div className={`flex items-center gap-2 ${isExportingMode ? 'bg-white' : 'bg-slate-100'} p-1 rounded-lg border ${isExportingMode ? 'border-none' : 'border-slate-200'}`}>
                 <button 
                   onClick={() => setTtsMode('siswa')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'siswa' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'siswa' ? (isExportingMode ? 'bg-white text-emerald-600 border border-emerald-200' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Mode Siswa
                 </button>
                 <button 
                   onClick={() => setTtsMode('guru')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'guru' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${ttsMode === 'guru' ? (isExportingMode ? 'bg-white text-emerald-600 border border-emerald-200' : 'bg-white text-emerald-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Mode Guru
                 </button>
@@ -620,7 +620,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : (isExportingMode ? 'bg-white border-slate-100 shadow-[inset_0_0_0_1000px_#ffffff]' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
+                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : (isExportingMode ? 'bg-white border-slate-200 shadow-none' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
                       {cell.number && (
@@ -648,7 +648,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             {/* Pertanyaan TTS */}
             <div className={`space-y-6 ${(isExportingMode || displayTarget === 'tts') ? 'pt-8' : ''}`}>
               <div>
-                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
                   <span className="w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs" style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar
                 </h4>
                 <div className="space-y-3">
@@ -667,7 +667,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
                   <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs" style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Menurun
                 </h4>
                 <div className="space-y-3">
@@ -691,7 +691,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* I. Evaluasi */}
       {result.pilihanGanda?.length > 0 && shouldRender('evaluasi') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'border-t border-slate-100 pt-4 mt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') && displayTarget === 'all' ? 'pt-4 mt-4' : (isExportingMode || displayTarget !== 'all') ? 'pt-1' : 'p-6 md:p-8'}`}>
           {displayTarget.startsWith('evaluasi') && <IdentitasIndividu />}
           <div className={`flex items-center gap-2 mb-5 ${displayTarget.startsWith('evaluasi') ? 'text-slate-800' : 'text-emerald-600'}`} style={{ pageBreakAfter: 'avoid' }}>
             <ListChecks size={20} className={displayTarget.startsWith('evaluasi') ? 'hidden' : ''} />
@@ -699,7 +699,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           </div>
           <div className="space-y-4">
             {result.pilihanGanda.map((pg: any, idx: number) => (
-              <div key={idx} className={`${displayTarget.startsWith('evaluasi') ? 'pb-3' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border border-slate-100' : 'p-6 rounded-xl bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div key={idx} className={`${displayTarget.startsWith('evaluasi') ? 'pb-3' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-6 rounded-xl bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
                 <div className="flex gap-2 font-bold text-slate-900 mb-3 leading-relaxed"><span className="shrink-0">{idx + 1}.</span><span>{pg.soal}</span></div>
                 <div className={`grid ${displayTarget.startsWith('evaluasi') ? 'grid-cols-1 gap-2 ml-6' : 'grid-cols-1 sm:grid-cols-2 gap-3'} text-sm text-slate-800 mb-3 pl-2`}>
                   <div className="flex gap-2"><span className="font-bold shrink-0 w-4">A.</span><span className="leading-relaxed">{pg.opsiA}</span></div>
@@ -708,7 +708,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   <div className="flex gap-2"><span className="font-bold shrink-0 w-4">D.</span><span className="leading-relaxed">{pg.opsiD}</span></div>
                   <div className={`flex gap-2 ${!displayTarget.startsWith('evaluasi') ? 'sm:col-span-2' : ''}`}><span className="font-bold shrink-0 w-4">E.</span><span className="leading-relaxed">{pg.opsiE}</span></div>
                 </div>
-                {(displayTarget === 'all' || displayTarget === 'evaluasi_dengan_kunci') && <div className={`text-sm font-bold mt-1 inline-block px-3 py-1.5 rounded-md ${(isExportingMode || displayTarget !== 'all') ? 'border border-slate-200 text-slate-800' : 'bg-emerald-100 border border-emerald-200 text-emerald-800'}`}>Kunci Jawaban: {pg.kunci}</div>}
+                {(displayTarget === 'all' || displayTarget === 'evaluasi_dengan_kunci') && <div className={`text-sm font-bold mt-1 inline-block px-3 py-1.5 rounded-md ${(isExportingMode || displayTarget !== 'all') ? 'border-none text-slate-800' : 'bg-emerald-100 border border-emerald-200 text-emerald-800'}`}>Kunci Jawaban: {pg.kunci}</div>}
               </div>
             ))}
           </div>
@@ -717,19 +717,19 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
       {/* K. Penilaian */}
       {result.instrumenPenilaian && shouldRender('all') && (
-        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'border-t border-slate-100 text-slate-800 pt-4 mt-4' : 'p-6 md:p-8 bg-slate-800 text-slate-50'}`}>
+        <div className={`${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 pt-4 mt-4' : 'p-6 md:p-8 bg-slate-800 text-slate-50'}`}>
           <div className="flex items-center gap-2 mb-4 text-slate-400" style={{ pageBreakAfter: 'avoid' }}><ClipboardCheck size={20} /><h3 className={`text-lg font-bold ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-white'}`}>K. Instrumen Penilaian</h3></div>
           <div className="grid md:grid-cols-3 gap-5 text-sm" style={{ pageBreakInside: 'avoid' }}>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border border-slate-100' : 'bg-slate-700/50 border border-slate-600'}`}>
-              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-100' : 'text-emerald-400 border-slate-600'}`}>Aspek Sikap</p>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-emerald-400 border-slate-600'}`}>Aspek Sikap</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.sikap?.map((s: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{s}</span></div>))}</div>
             </div>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border border-slate-100' : 'bg-slate-700/50 border border-slate-600'}`}>
-              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-100' : 'text-blue-400 border-slate-600'}`}>Aspek Pengetahuan</p>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-blue-400 border-slate-600'}`}>Aspek Pengetahuan</p>
               <div className={`leading-relaxed ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{formatText(result.instrumenPenilaian.pengetahuan)}</div>
             </div>
-            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border border-slate-100' : 'bg-slate-700/50 border border-slate-600'}`}>
-              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-slate-100' : 'text-amber-400 border-slate-600'}`}>Aspek Keterampilan</p>
+            <div className={`p-4 rounded-xl ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'bg-slate-700/50 border border-slate-600'}`}>
+              <p className={`font-bold mb-3 pb-2 border-b uppercase tracking-wider ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800 border-none' : 'text-amber-400 border-slate-600'}`}>Aspek Keterampilan</p>
               <div className={`space-y-2 leading-relaxed text-justify ${(isExportingMode || displayTarget !== 'all') ? 'text-slate-800' : 'text-slate-300'}`}>{result.instrumenPenilaian.keterampilan?.map((k: string, i: number) => (<div key={i} className="flex gap-2 items-start" style={{ pageBreakInside: 'avoid' }}><span className="font-bold shrink-0">•</span><span>{k}</span></div>))}</div>
             </div>
           </div>
