@@ -25,6 +25,7 @@
   }
 
   .crossword-number {
+    display: block !important;
     color: black !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -36,8 +37,7 @@
   section:not(#modul-ajar-content-container), 
   nav, 
   button, 
-  .fixed, 
-  .absolute {
+  .fixed {
     display: none !important;
   }
 
