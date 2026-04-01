@@ -668,6 +668,8 @@ export default function App() {
               const clonedElement = clonedDoc.getElementById(clonedTargetId);
               if (clonedElement) {
                 clonedElement.style.background = 'white';
+                clonedElement.style.boxShadow = 'none';
+                clonedElement.style.border = 'none';
                 // Remove any elements that shouldn't be in the PDF
                 const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
                 toRemove.forEach(el => el.remove());
@@ -802,11 +804,13 @@ export default function App() {
             const clonedElement = clonedDoc.getElementById(clonedTargetId);
             if (clonedElement) {
               clonedElement.style.background = 'white';
+              clonedElement.style.boxShadow = 'none';
+              clonedElement.style.border = 'none';
               const toRemove = clonedElement.querySelectorAll('.no-print, button, .export-exclude, .lucide-loader2');
               toRemove.forEach(el => el.remove());
-              clonedElement.style.padding = '30px';
-              clonedElement.style.width = '1000px';
-              clonedElement.style.maxWidth = '1000px';
+              clonedElement.style.padding = '20px';
+              clonedElement.style.width = '800px';
+              clonedElement.style.maxWidth = '800px';
             }
           }
         }).then((canvas: HTMLCanvasElement) => {

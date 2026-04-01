@@ -337,7 +337,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           <p className="font-bold text-slate-800 mb-2" style={{ pageBreakAfter: 'avoid' }}>2. Dalil Al-Quran / Hadits</p>
           <div className="space-y-4">
             {result.dalil?.map((d: any, idx: number) => (
-              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none' : 'bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div key={idx} className={`p-4 rounded-xl ${isExportingMode || displayTarget !== 'all' ? 'border-none bg-white' : 'bg-slate-50 border border-slate-200'}`} style={{ pageBreakInside: 'avoid' }}>
                 <span className={`text-xs font-bold px-3 py-1.5 rounded-md mb-3 inline-block ${isExportingMode || displayTarget !== 'all' ? 'bg-white border-none text-slate-800' : 'bg-emerald-100 text-emerald-700'}`}>{d.sumber}</span>
                 {d.teksArab && <p className="text-2xl font-arabic text-slate-900 text-right mb-4 leading-loose" dir="rtl">{d.teksArab}</p>}
                 <p className={`text-slate-700 italic pl-4 py-1 leading-relaxed ${isExportingMode || displayTarget !== 'all' ? 'border-l-2 border-slate-300' : 'border-l-4 border-emerald-400'}`}>"{d.terjemahan}"</p>
@@ -386,7 +386,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
           {displayTarget === 'all' && <h3 className="text-lg font-bold text-slate-800 mb-4" style={{ pageBreakAfter: 'avoid' }}>H. Penugasan</h3>}
           <div className={`grid ${displayTarget === 'all' ? 'md:grid-cols-2 gap-6' : 'grid-cols-1'}`}>
             {(shouldRender('all') || shouldRender('penugasan_individu')) && result.tugasIndividu && (
-              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none bg-white' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
                 {displayTarget === 'penugasan_individu' && <IdentitasIndividu />}
                 {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'border-b border-slate-100'}`}><User size={18} /> Tugas Individu</div>}
                 <p className={`font-bold text-slate-900 mb-3 ${displayTarget !== 'all' ? 'text-lg uppercase text-center mb-5' : 'text-md'}`}>{result.tugasIndividu.judul}</p>
@@ -394,7 +394,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
               </div>
             )}
             {(shouldRender('all') || shouldRender('penugasan_kelompok')) && result.tugasKelompok && (
-              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
+              <div className={`${displayTarget !== 'all' ? '' : (isExportingMode || displayTarget !== 'all') ? 'p-4 rounded-xl border-none bg-white' : 'p-5 rounded-xl border border-slate-200 bg-white shadow-sm'}`} style={{ pageBreakInside: 'avoid' }}>
                 {displayTarget === 'penugasan_kelompok' && <IdentitasKelompok />}
                 {displayTarget === 'all' && <div className={`flex items-center gap-2 font-bold mb-3 pb-2 text-slate-800 ${(isExportingMode || displayTarget !== 'all') ? 'border-none' : 'border-b border-slate-100'}`}><Users size={18} /> Tugas Kelompok</div>}
                 <p className={`font-bold text-slate-900 mb-3 ${displayTarget !== 'all' ? 'text-lg uppercase text-center mb-5' : 'text-md'}`}>{result.tugasKelompok.judul}</p>
@@ -620,7 +620,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   return grid.map((cell, i) => (
                     <div 
                       key={i} 
-                      className={`aspect-square border ${!cell.isWhite ? 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]' : (isExportingMode ? 'bg-white border-slate-300 shadow-none' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
+                      className={`aspect-square border ${!cell.isWhite ? (isExportingMode ? 'bg-slate-800 border-slate-800 shadow-none' : 'bg-slate-800 border-slate-800 shadow-[inset_0_0_0_1000px_#1e293b]') : (isExportingMode ? 'bg-white border-slate-300 shadow-none' : 'bg-white border-slate-300 shadow-[inset_0_0_0_1000px_#ffffff]')} rounded-sm flex items-center justify-center text-[7px] font-bold text-slate-800 relative`}
                       style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
                     >
                       {cell.number && (
@@ -649,7 +649,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
             <div className={`space-y-6 ${(isExportingMode || displayTarget === 'tts') ? 'pt-8' : ''}`}>
               <div>
                 <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border border-slate-300 text-slate-800' : 'bg-emerald-100 text-emerald-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border-none text-slate-800 font-bold' : 'bg-emerald-100 text-emerald-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Mendatar
                 </h4>
                 <div className="space-y-3">
                   {result.tekaTekiSilang.mendatar?.map((item: any, idx: number) => (
@@ -668,7 +668,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
 
               <div>
                 <h4 className={`font-bold text-slate-800 mb-3 flex items-center gap-2 pb-2 ${isExportingMode ? 'border-none' : 'border-b border-slate-200'}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border border-slate-300 text-slate-800' : 'bg-blue-100 text-blue-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Menurun
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isExportingMode ? 'bg-white border-none text-slate-800 font-bold' : 'bg-blue-100 text-blue-700'}`} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>M</span> Menurun
                 </h4>
                 <div className="space-y-3">
                   {result.tekaTekiSilang.menurun?.map((item: any, idx: number) => (
