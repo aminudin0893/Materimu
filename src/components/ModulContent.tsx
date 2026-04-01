@@ -639,7 +639,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
                   ));
                 })()}
               </div>
-              <p className="text-[10px] text-slate-500 italic text-center leading-tight">Kotak di atas telah disinkronkan secara otomatis dengan algoritma cerdas untuk memastikan akurasi jawaban.</p>
+              <p className="text-[10px] text-slate-500 italic text-center leading-tight">Isi kotak di atas dengan jawaban yang benar agar dapat menyelesaikan tugas dengan baik.</p>
             </div>
 
             {/* Page break for PDF export */}
