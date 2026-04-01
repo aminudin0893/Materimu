@@ -133,7 +133,7 @@ export const ModulContent: React.FC<ModulContentProps> = ({
       
       {/* KOP SEKOLAH */}
       {(isExportingMode || displayTarget !== 'all') && (
-        <div className={`pt-2 pb-3 ${isExportingMode ? 'mb-2 border-none' : 'mb-6 border-b-[4px] border-slate-800 border-double'} flex items-center gap-6`} style={{ pageBreakAfter: 'avoid' }}>
+        <div className="pt-2 pb-3 mb-6 border-b-[4px] border-slate-800 border-double flex items-center gap-6" style={{ pageBreakAfter: 'avoid' }}>
           {logo ? (
             <div className="w-24 h-24 shrink-0 flex items-center justify-center">
               <img src={logo} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
